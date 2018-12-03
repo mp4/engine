@@ -5,7 +5,7 @@
 package gui
 
 import (
-	"github.com/g3n/engine/window"
+	"github.com/sansebasko/engine/window"
 )
 
 // Consolidate window events plus GUI events

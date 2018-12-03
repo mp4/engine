@@ -5,10 +5,10 @@
 package control
 
 import (
-	"github.com/g3n/engine/camera"
-	"github.com/g3n/engine/math32"
-	"github.com/g3n/engine/util/logger"
-	"github.com/g3n/engine/window"
+	"github.com/sansebasko/engine/camera"
+	"github.com/sansebasko/engine/math32"
+	"github.com/sansebasko/engine/util/logger"
+	"github.com/sansebasko/engine/window"
 	"math"
 )
 

@@ -5,14 +5,14 @@
 package physics
 
 import (
-	"github.com/g3n/engine/experimental/physics/equation"
-	"github.com/g3n/engine/experimental/physics/solver"
-	"github.com/g3n/engine/experimental/physics/constraint"
-	"github.com/g3n/engine/experimental/collision"
-	"github.com/g3n/engine/math32"
-	"github.com/g3n/engine/experimental/physics/object"
-	"github.com/g3n/engine/core"
-	"github.com/g3n/engine/experimental/collision/shape"
+	"github.com/sansebasko/engine/experimental/physics/equation"
+	"github.com/sansebasko/engine/experimental/physics/solver"
+	"github.com/sansebasko/engine/experimental/physics/constraint"
+	"github.com/sansebasko/engine/experimental/collision"
+	"github.com/sansebasko/engine/math32"
+	"github.com/sansebasko/engine/experimental/physics/object"
+	"github.com/sansebasko/engine/core"
+	"github.com/sansebasko/engine/experimental/collision/shape"
 )
 
 // Simulation represents a physics simulation.

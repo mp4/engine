@@ -1,8 +1,8 @@
 
   <p align="center"><img width="150" src="https://github.com/g3n/g3nd/blob/master/data/images/g3n_logo.png" alt="G3N Banner"/></p>
   <p align="center">
-    <a href="https://godoc.org/github.com/g3n/engine"><img src="https://godoc.org/github.com/g3n/engine?status.svg" alt="Godoc"></img></a>
-    <a href="https://goreportcard.com/report/github.com/g3n/engine"><img src="https://goreportcard.com/badge/github.com/g3n/engine"  alt="Go Report Card"/></a>
+    <a href="https://godoc.org/github.com/sansebasko/engine"><img src="https://godoc.org/github.com/sansebasko/engine?status.svg" alt="Godoc"></img></a>
+    <a href="https://goreportcard.com/report/github.com/sansebasko/engine"><img src="https://goreportcard.com/badge/github.com/sansebasko/engine"  alt="Go Report Card"/></a>
   </p>
   <p><h1 align="center">G3N - Go 3D Game Engine</h1></p>
 
@@ -56,7 +56,7 @@ Install the development files of OpenAL and Vorbis using [Homebrew](https://brew
 
   The following command will download and install the engine along with all its Go dependencies:
 
-  `go get -u github.com/g3n/engine/...`
+  `go get -u github.com/sansebasko/engine/...`
 
   ## Features
 
@@ -97,12 +97,12 @@ Install the development files of OpenAL and Vorbis using [Homebrew](https://brew
   package main
 
   import (
-      "github.com/g3n/engine/util/application"
-      "github.com/g3n/engine/geometry"
-      "github.com/g3n/engine/material"
-      "github.com/g3n/engine/math32"
-      "github.com/g3n/engine/graphic"
-      "github.com/g3n/engine/light"
+      "github.com/sansebasko/engine/util/application"
+      "github.com/sansebasko/engine/geometry"
+      "github.com/sansebasko/engine/material"
+      "github.com/sansebasko/engine/math32"
+      "github.com/sansebasko/engine/graphic"
+      "github.com/sansebasko/engine/light"
   )
 
   func main() {
@@ -141,12 +141,12 @@ Install the development files of OpenAL and Vorbis using [Homebrew](https://brew
 
   ## Documentation
 
-  The complete engine API reference can be found here: [![GoDoc](https://godoc.org/github.com/g3n/engine?status.svg)](https://godoc.org/github.com/g3n/engine).
+  The complete engine API reference can be found here: [![GoDoc](https://godoc.org/github.com/sansebasko/engine?status.svg)](https://godoc.org/github.com/sansebasko/engine).
 
   There is also the beginning of a Getting Started Guide, and a newly created list of Guides and Tutorials:
 
-  * [Getting Started](https://github.com/g3n/engine/wiki/Getting-Started-(WIP))
-  * [Guides and Tutorials](https://github.com/g3n/engine/wiki/Guides-and-Tutorials)
+  * [Getting Started](https://github.com/sansebasko/engine/wiki/Getting-Started-(WIP))
+  * [Guides and Tutorials](https://github.com/sansebasko/engine/wiki/Guides-and-Tutorials)
 
   Along with those, a good way to learn how to use the engine is to see the source code of [G3ND - the G3N demo](https://github.com/g3n/g3nd).
   

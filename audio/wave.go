@@ -6,7 +6,7 @@ package audio
 
 import (
 	"fmt"
-	"github.com/g3n/engine/audio/al"
+	"github.com/sansebasko/engine/audio/al"
 	"os"
 )
 

@@ -5,7 +5,7 @@
 package texture
 
 import (
-	"github.com/g3n/engine/gls"
+	"github.com/sansebasko/engine/gls"
 	"time"
 )
 

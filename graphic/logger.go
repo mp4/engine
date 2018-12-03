@@ -5,7 +5,7 @@
 package graphic
 
 import (
-	"github.com/g3n/engine/util/logger"
+	"github.com/sansebasko/engine/util/logger"
 )
 
 // Package logger

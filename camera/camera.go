@@ -6,8 +6,8 @@
 package camera
 
 import (
-	"github.com/g3n/engine/core"
-	"github.com/g3n/engine/math32"
+	"github.com/sansebasko/engine/core"
+	"github.com/sansebasko/engine/math32"
 )
 
 // ICamera is interface for all camera types.

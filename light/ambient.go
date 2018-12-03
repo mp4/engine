@@ -5,9 +5,9 @@
 package light
 
 import (
-	"github.com/g3n/engine/core"
-	"github.com/g3n/engine/gls"
-	"github.com/g3n/engine/math32"
+	"github.com/sansebasko/engine/core"
+	"github.com/sansebasko/engine/gls"
+	"github.com/sansebasko/engine/math32"
 )
 
 // Ambient represents an ambient light

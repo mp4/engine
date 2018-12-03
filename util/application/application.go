@@ -9,17 +9,17 @@ import (
 	"runtime/trace"
 	"time"
 
-	"github.com/g3n/engine/audio/al"
-	"github.com/g3n/engine/audio/vorbis"
-	"github.com/g3n/engine/camera"
-	"github.com/g3n/engine/camera/control"
-	"github.com/g3n/engine/core"
-	"github.com/g3n/engine/gls"
-	"github.com/g3n/engine/gui"
-	"github.com/g3n/engine/math32"
-	"github.com/g3n/engine/renderer"
-	"github.com/g3n/engine/util/logger"
-	"github.com/g3n/engine/window"
+	"github.com/sansebasko/engine/audio/al"
+	"github.com/sansebasko/engine/audio/vorbis"
+	"github.com/sansebasko/engine/camera"
+	"github.com/sansebasko/engine/camera/control"
+	"github.com/sansebasko/engine/core"
+	"github.com/sansebasko/engine/gls"
+	"github.com/sansebasko/engine/gui"
+	"github.com/sansebasko/engine/math32"
+	"github.com/sansebasko/engine/renderer"
+	"github.com/sansebasko/engine/util/logger"
+	"github.com/sansebasko/engine/window"
 )
 
 // Application is a standard application object which can be used as a base for G3N applications.

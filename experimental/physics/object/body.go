@@ -5,10 +5,10 @@
 package object
 
 import (
-	"github.com/g3n/engine/graphic"
-	"github.com/g3n/engine/math32"
-	"github.com/g3n/engine/material"
-	"github.com/g3n/engine/experimental/collision/shape"
+	"github.com/sansebasko/engine/graphic"
+	"github.com/sansebasko/engine/math32"
+	"github.com/sansebasko/engine/material"
+	"github.com/sansebasko/engine/experimental/collision/shape"
 )
 
 // Body represents a physics-driven body.
