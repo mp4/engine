@@ -201,16 +201,22 @@ func (s *Splitter) onMouse(evname string, ev interface{}) {
 	switch evname {
 	case OnMouseDown:
 		s.pressed = true
-		if s.horiz {
-			s.posLast = mev.Xpos
-		} else {
-			s.posLast = mev.Ypos
+		if mev.Button == window.MouseButtonLeft {
+			if s.horiz {
+				s.posLast = mev.Xpos
+			} else {
+				s.posLast = mev.Ypos
+			}
+			s.root.SetMouseFocus(&s.spacer)
 		}
-		s.root.SetMouseFocus(&s.spacer)
 	case OnMouseUp:
+		if mev.Button == window.MouseButtonLeft {
+			s.root.SetCursorNormal()
+			s.root.SetMouseFocus(nil)
+		} else if mev.Button == window.MouseButtonRight && s.pressed {
+			s.SetSplit(float32(s.min))
+		}
 		s.pressed = false
-		s.root.SetCursorNormal()
-		s.root.SetMouseFocus(nil)
 	default:
 	}
 	s.root.StopPropagation(Stop3D)
