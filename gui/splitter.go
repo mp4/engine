@@ -14,6 +14,7 @@ type Splitter struct {
 	Panel                     // Embedded panel
 	P0        Panel           // Left/Top panel
 	P1        Panel           // Right/Bottom panel
+	SplitType SplitType       // relative (0-1), absolute (in pixels) or reverse absolute (in pixels)
 	styles    *SplitterStyles // pointer to current styles
 	spacer    Panel           // spacer panel
 	horiz     bool            // horizontal or vertical splitter
@@ -37,25 +38,34 @@ type SplitterStyles struct {
 	Drag   SplitterStyle
 }
 
+type SplitType int
+
+const (
+	Relative SplitType = iota
+	Absolute
+	ReverseAbsolute
+)
+
 // NewHSplitter creates and returns a pointer to a new horizontal splitter
 // widget with the specified initial dimensions
-func NewHSplitter(width, height float32) *Splitter {
+func NewHSplitter(width, height float32, splitType SplitType) *Splitter {
 
-	return newSplitter(true, width, height)
+	return newSplitter(true, width, height, splitType)
 }
 
 // NewVSplitter creates and returns a pointer to a new vertical splitter
 // widget with the specified initial dimensions
-func NewVSplitter(width, height float32) *Splitter {
+func NewVSplitter(width, height float32, splitType SplitType) *Splitter {
 
-	return newSplitter(false, width, height)
+	return newSplitter(false, width, height, splitType)
 }
 
 // newSpliter creates and returns a pointer of a new splitter with
 // the specified orientation and initial dimensions.
-func newSplitter(horiz bool, width, height float32) *Splitter {
+func newSplitter(horiz bool, width, height float32, splitType SplitType) *Splitter {
 
 	s := new(Splitter)
+	s.SplitType = splitType
 	s.horiz = horiz
 	s.styles = &StyleDefault().Splitter
 	s.Panel.Initialize(width, height)
@@ -74,10 +84,14 @@ func newSplitter(horiz bool, width, height float32) *Splitter {
 
 	if horiz {
 		s.spacer.SetBorders(0, 1, 0, 1)
-		s.pos = 0.5
+		if s.SplitType == Relative {
+			s.pos = 0.5
+		}
 	} else {
 		s.spacer.SetBorders(1, 0, 1, 0)
-		s.pos = 0.5
+		if s.SplitType == Relative {
+			s.pos = 0.5
+		}
 	}
 
 	s.Subscribe(OnResize, s.onResize)
@@ -92,7 +106,8 @@ func newSplitter(horiz bool, width, height float32) *Splitter {
 }
 
 // SetSplit sets the position of the splitter bar.
-// It accepts a value from 0.0 to 1.0
+// It accepts a value from 0.0 to 1.0 if split type is relative,
+// otherwise the given value is interpreted as pixel count
 func (s *Splitter) SetSplit(pos float32) {
 
 	s.setSplit(pos)
@@ -100,7 +115,8 @@ func (s *Splitter) SetSplit(pos float32) {
 }
 
 // Split returns the current position of the splitter bar.
-// It returns a value from 0.0 to 1.0
+// It returns a value from 0.0 to 1.0 if split type is relative,
+// otherwise the width of the split
 func (s *Splitter) Split() float32 {
 
 	return s.pos
@@ -159,11 +175,23 @@ func (s *Splitter) onCursor(evname string, ev interface{}) {
 		if s.horiz {
 			delta = cev.Xpos - s.posLast
 			s.posLast = cev.Xpos
-			pos += delta / s.ContentWidth()
+			if s.SplitType == Relative {
+				pos += delta / s.ContentWidth()
+			} else if s.SplitType == Absolute {
+				pos += delta
+			} else {
+				pos -= delta
+			}
 		} else {
 			delta = cev.Ypos - s.posLast
 			s.posLast = cev.Ypos
-			pos += delta / s.ContentHeight()
+			if s.SplitType == Relative {
+				pos += delta / s.ContentHeight()
+			} else if s.SplitType == Absolute {
+				pos += delta
+			} else {
+				pos -= delta
+			}
 		}
 		s.setSplit(pos)
 		s.recalc()
@@ -174,13 +202,17 @@ func (s *Splitter) onCursor(evname string, ev interface{}) {
 // setSplit sets the validated and clamped split position from the received value.
 func (s *Splitter) setSplit(pos float32) {
 
-	if pos < 0 {
-		s.pos = 0
-	} else if pos > 1 {
-		s.pos = 1
-	} else {
-		s.pos = pos
+	if s.SplitType == Relative {
+		if pos < 0 {
+			s.pos = 0
+			return
+		}
+		if pos > 1 {
+			s.pos = 1
+			return
+		}
 	}
+	s.pos = pos
 }
 
 // update updates the splitter visual state
@@ -209,14 +241,23 @@ func (s *Splitter) applyStyle(ss *SplitterStyle) {
 	}
 }
 
-// recalc relcalculates the position and sizes of the internal panels
+// recalc recalculates the position and sizes of the internal panels
 func (s *Splitter) recalc() {
 
 	width := s.ContentWidth()
 	height := s.ContentHeight()
+
 	if s.horiz {
 		// Calculate x position for spacer panel
-		spx := width*s.pos - s.spacer.Width()/2
+		var spx float32
+		if s.SplitType == Relative {
+			spx = width*s.pos - s.spacer.Width()/2
+		} else if s.SplitType == Absolute {
+			spx = s.pos
+		} else {
+			spx = width - s.pos - s.spacer.Width()
+		}
+
 		if spx < 0 {
 			spx = 0
 		} else if spx > width-s.spacer.Width() {
@@ -233,7 +274,14 @@ func (s *Splitter) recalc() {
 		s.P1.SetSize(width-spx-s.spacer.Width(), height)
 	} else {
 		// Calculate y position for spacer panel
-		spy := height*s.pos - s.spacer.Height()/2
+		var spy float32
+		if s.SplitType == Relative {
+			spy = height*s.pos - s.spacer.Height()/2
+		} else if s.SplitType == Absolute {
+			spy = s.pos
+		} else {
+			spy = height - s.pos - s.spacer.Height()
+		}
 		if spy < 0 {
 			spy = 0
 		} else if spy > height-s.spacer.Height() {

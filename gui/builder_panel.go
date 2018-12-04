@@ -460,15 +460,15 @@ func buildSlider(b *Builder, am map[string]interface{}) (IPanel, error) {
 	return slider, nil
 }
 
-// buildSplitter builds a gui object of type: HSplitterr or VSplitter
+// buildSplitter builds a gui object of type: HSplitter or VSplitter
 func buildSplitter(b *Builder, am map[string]interface{}) (IPanel, error) {
 
 	// Builds horizontal or vertical splitter
 	var splitter *Splitter
 	if am[AttribType].(string) == TypeHSplitter {
-		splitter = NewHSplitter(0, 0)
+		splitter = NewHSplitter(0, 0, Relative)
 	} else {
-		splitter = NewVSplitter(0, 0)
+		splitter = NewVSplitter(0, 0, Relative)
 	}
 
 	// Sets common attributes
