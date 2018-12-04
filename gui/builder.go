@@ -169,7 +169,7 @@ var mapAlignv = map[string]Align{
 }
 
 // maps edge name (dock layout) with edge parameter
-var mapEdgeName = map[string]int{
+var mapEdgeName = map[string]Edge{
 	"top":    DockTop,
 	"right":  DockRight,
 	"bottom": DockBottom,

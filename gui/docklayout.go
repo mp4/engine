@@ -6,16 +6,19 @@ package gui
 
 // DockLayout is the layout for docking panels to the internal edges of their parent.
 type DockLayout struct {
+	incumbents []Edge
 }
+
+type Edge int
 
 // DockLayoutParams specifies the edge to dock to.
 type DockLayoutParams struct {
-	Edge int
+	Edge Edge
 }
 
 // The different types of docking.
 const (
-	DockTop = iota + 1
+	DockTop Edge = iota + 1
 	DockRight
 	DockBottom
 	DockLeft
@@ -23,61 +26,73 @@ const (
 )
 
 // NewDockLayout returns a pointer to a new DockLayout.
-func NewDockLayout() *DockLayout {
+func NewDockLayout(incumbents ...Edge) *DockLayout {
 
-	return new(DockLayout)
+	return &DockLayout{incumbents: incumbents}
 }
 
 // Recalc (which satisfies the ILayout interface) recalculates the positions and sizes of the children panels.
 func (dl *DockLayout) Recalc(ipan IPanel) {
 
 	pan := ipan.GetPanel()
-	width := pan.Width()
-	topY := float32(0)
-	bottomY := pan.Height()
-	leftX := float32(0)
-	rightX := width
 
-	// Top and bottom first
-	for _, iobj := range pan.Children() {
-		child := iobj.(IPanel).GetPanel()
-		if child.layoutParams == nil {
+	y := float32(0)
+	x := float32(0)
+	w := pan.Width()
+	h := pan.Height()
+
+	if !contains(dl.incumbents, DockTop) {
+		dl.incumbents = append(dl.incumbents, DockTop)
+	}
+	if !contains(dl.incumbents, DockBottom) {
+		dl.incumbents = append(dl.incumbents, DockBottom)
+	}
+	if !contains(dl.incumbents, DockLeft) {
+		dl.incumbents = append(dl.incumbents, DockLeft)
+	}
+	if !contains(dl.incumbents, DockRight) {
+		dl.incumbents = append(dl.incumbents, DockRight)
+	}
+
+	for _, incumbent := range dl.incumbents {
+		// DockCenter can never be an incumbent and will be ignored if specified as incumbent
+		if incumbent == DockCenter {
 			continue
 		}
-		params := child.layoutParams.(*DockLayoutParams)
-		if params.Edge == DockTop {
-			child.SetPosition(0, topY)
-			topY += child.Height()
-			child.SetWidth(width)
-			continue
-		}
-		if params.Edge == DockBottom {
-			child.SetPosition(0, bottomY-child.Height())
-			bottomY -= child.Height()
-			child.SetWidth(width)
-			continue
+		for _, iobj := range pan.Children() {
+			child := iobj.(IPanel).GetPanel()
+			if child.layoutParams == nil {
+				continue
+			}
+			params := child.layoutParams.(*DockLayoutParams)
+			if params.Edge == incumbent {
+				if incumbent == DockTop {
+					child.SetPosition(x, y)
+					y += child.Height()
+					h -= child.Height()
+					child.SetWidth(w)
+				}
+				if incumbent == DockBottom {
+					h -= child.Height()
+					child.SetPosition(x, y+h)
+					child.SetWidth(w)
+				}
+				if incumbent == DockLeft {
+					child.SetPosition(x, y)
+					x += child.Width()
+					w -= child.Width()
+					child.SetHeight(h)
+				}
+				if incumbent == DockRight {
+					w -= child.Width()
+					child.SetPosition(x+w, y)
+					child.SetHeight(h)
+				}
+				continue
+			}
 		}
 	}
-	// Left and right
-	for _, iobj := range pan.Children() {
-		child := iobj.(IPanel).GetPanel()
-		if child.layoutParams == nil {
-			continue
-		}
-		params := child.layoutParams.(*DockLayoutParams)
-		if params.Edge == DockLeft {
-			child.SetPosition(leftX, topY)
-			leftX += child.Width()
-			child.SetHeight(bottomY - topY)
-			continue
-		}
-		if params.Edge == DockRight {
-			child.SetPosition(rightX-child.Width(), topY)
-			rightX -= child.Width()
-			child.SetHeight(bottomY - topY)
-			continue
-		}
-	}
+
 	// Center (only the first found)
 	for _, iobj := range pan.Children() {
 		child := iobj.(IPanel).GetPanel()
@@ -86,9 +101,18 @@ func (dl *DockLayout) Recalc(ipan IPanel) {
 		}
 		params := child.layoutParams.(*DockLayoutParams)
 		if params.Edge == DockCenter {
-			child.SetPosition(leftX, topY)
-			child.SetSize(rightX-leftX, bottomY-topY)
+			child.SetPosition(x, y)
+			child.SetSize(w, h)
 			break
 		}
 	}
+}
+
+func contains(edges []Edge, edge Edge) bool {
+	for _, e := range edges {
+		if e == edge {
+			return true
+		}
+	}
+	return false
 }

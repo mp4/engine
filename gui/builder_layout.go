@@ -195,6 +195,6 @@ func (bl *BuilderLayoutDock) BuildParams(b *Builder, am map[string]interface{}) 
 	if edge == nil {
 		return nil, b.err(am, AttribEdge, "Edge name not found")
 	}
-	params := DockLayoutParams{Edge: edge.(int)}
+	params := DockLayoutParams{Edge: edge.(Edge)}
 	return &params, nil
 }
