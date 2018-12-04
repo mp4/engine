@@ -466,9 +466,9 @@ func buildSplitter(b *Builder, am map[string]interface{}) (IPanel, error) {
 	// Builds horizontal or vertical splitter
 	var splitter *Splitter
 	if am[AttribType].(string) == TypeHSplitter {
-		splitter = NewHSplitter(0, 0, Relative)
+		splitter = NewHSplitter(0, 0)
 	} else {
-		splitter = NewVSplitter(0, 0, Relative)
+		splitter = NewVSplitter(0, 0)
 	}
 
 	// Sets common attributes

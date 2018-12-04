@@ -7,6 +7,7 @@ package gui
 import (
 	"github.com/sansebasko/engine/math32"
 	"github.com/sansebasko/engine/window"
+	"math"
 )
 
 // Splitter is a GUI element that splits two panels and can be adjusted
@@ -14,11 +15,13 @@ type Splitter struct {
 	Panel                     // Embedded panel
 	P0        Panel           // Left/Top panel
 	P1        Panel           // Right/Bottom panel
-	SplitType SplitType       // relative (0-1), absolute (in pixels) or reverse absolute (in pixels)
+	splitType SplitType       // relative (0-1), absolute (in pixels) or reverse absolute (in pixels)
 	styles    *SplitterStyles // pointer to current styles
 	spacer    Panel           // spacer panel
 	horiz     bool            // horizontal or vertical splitter
-	pos       float32         // relative position of the center of the spacer panel (0 to 1)
+	pos       float32         // relative position (0 to 1) of the center of the spacer panel (split type == Relative) or absolut position in pixels from left (split type == Absolute) or from right plus spacer width (split type == ReverseAbsolute)
+	min       int             // minimal number of pixels of the top/left (split type == Relative/Absolute) or bottom/right (split type == ReverseAbsolute)
+	max       int             // maximal number of pixels of the top/left (split type == Relative/Absolute) or bottom/right (split type == ReverseAbsolute)
 	posLast   float32         // last position in pixels of the mouse cursor when dragging
 	pressed   bool            // mouse button is pressed and dragging
 	mouseOver bool            // mouse is over the spacer panel
@@ -48,24 +51,27 @@ const (
 
 // NewHSplitter creates and returns a pointer to a new horizontal splitter
 // widget with the specified initial dimensions
-func NewHSplitter(width, height float32, splitType SplitType) *Splitter {
+func NewHSplitter(width, height float32) *Splitter {
 
-	return newSplitter(true, width, height, splitType)
+	return newSplitter(true, width, height)
 }
 
 // NewVSplitter creates and returns a pointer to a new vertical splitter
 // widget with the specified initial dimensions
-func NewVSplitter(width, height float32, splitType SplitType) *Splitter {
+func NewVSplitter(width, height float32) *Splitter {
 
-	return newSplitter(false, width, height, splitType)
+	return newSplitter(false, width, height)
 }
 
 // newSpliter creates and returns a pointer of a new splitter with
 // the specified orientation and initial dimensions.
-func newSplitter(horiz bool, width, height float32, splitType SplitType) *Splitter {
+func newSplitter(horiz bool, width, height float32) *Splitter {
 
 	s := new(Splitter)
-	s.SplitType = splitType
+	s.splitType = Relative
+	s.pos = 0.5
+	s.min = 0
+	s.max = math.MaxInt32
 	s.horiz = horiz
 	s.styles = &StyleDefault().Splitter
 	s.Panel.Initialize(width, height)
@@ -84,14 +90,8 @@ func newSplitter(horiz bool, width, height float32, splitType SplitType) *Splitt
 
 	if horiz {
 		s.spacer.SetBorders(0, 1, 0, 1)
-		if s.SplitType == Relative {
-			s.pos = 0.5
-		}
 	} else {
 		s.spacer.SetBorders(1, 0, 1, 0)
-		if s.SplitType == Relative {
-			s.pos = 0.5
-		}
 	}
 
 	s.Subscribe(OnResize, s.onResize)
@@ -103,6 +103,72 @@ func newSplitter(horiz bool, width, height float32, splitType SplitType) *Splitt
 	s.update()
 	s.recalc()
 	return s
+}
+
+// SetSplitType sets the type of the split, which
+// has an impact of how the split position is interpreted
+func (s *Splitter) SetSplitType(splitType SplitType) {
+
+	s.splitType = splitType
+	s.recalc()
+}
+
+// SplitType returns the split type
+func (s *Splitter) SplitType() SplitType {
+
+	return s.splitType
+}
+
+// SetSplitMin sets the minimal number of pixels of the
+// top/left panel if split type is Relative or Absolute.
+// Otherwise it sets the minimal number of pixels of the
+// bottom/right panel
+func (s *Splitter) SetSplitMin(min int) {
+
+	if min < 0 {
+		s.min = 0
+	} else if min > s.max {
+		s.min = s.max
+		s.max = min
+	} else {
+		s.min = min
+	}
+	s.SetSplit(s.pos)
+}
+
+// SplitMin returns the minimal number of pixels of the
+// top/left panel if split type is Relative or Absolute.
+// Otherwise it returns the minimal number of pixels of the
+// bottom/right panel
+func (s *Splitter) SplitMin() int {
+
+	return s.min
+}
+
+// SetSplitMax sets the maximal number of pixels of the
+// top/left panel if split type is Relative or Absolute.
+// Otherwise it sets the maximal number of pixels of the
+// bottom/right panel
+func (s *Splitter) SetSplitMax(max int) {
+
+	if max < 0 {
+		s.max = 0
+	} else if max < s.min {
+		s.max = s.min
+		s.min = max
+	} else {
+		s.max = max
+	}
+	s.SetSplit(s.pos)
+}
+
+// SplitMax returns the maximal number of pixels of the
+// top/left panel if split type is Relative or Absolute.
+// Otherwise it returns the maximal number of pixels of the
+// bottom/right panel
+func (s *Splitter) SplitMax() int {
+
+	return s.max
 }
 
 // SetSplit sets the position of the splitter bar.
@@ -175,9 +241,9 @@ func (s *Splitter) onCursor(evname string, ev interface{}) {
 		if s.horiz {
 			delta = cev.Xpos - s.posLast
 			s.posLast = cev.Xpos
-			if s.SplitType == Relative {
+			if s.splitType == Relative {
 				pos += delta / s.ContentWidth()
-			} else if s.SplitType == Absolute {
+			} else if s.splitType == Absolute {
 				pos += delta
 			} else {
 				pos -= delta
@@ -185,9 +251,9 @@ func (s *Splitter) onCursor(evname string, ev interface{}) {
 		} else {
 			delta = cev.Ypos - s.posLast
 			s.posLast = cev.Ypos
-			if s.SplitType == Relative {
+			if s.splitType == Relative {
 				pos += delta / s.ContentHeight()
-			} else if s.SplitType == Absolute {
+			} else if s.splitType == Absolute {
 				pos += delta
 			} else {
 				pos -= delta
@@ -202,17 +268,53 @@ func (s *Splitter) onCursor(evname string, ev interface{}) {
 // setSplit sets the validated and clamped split position from the received value.
 func (s *Splitter) setSplit(pos float32) {
 
-	if s.SplitType == Relative {
+	min := float32(s.min)
+	max := float32(s.max)
+	if s.splitType == Relative {
 		if pos < 0 {
-			s.pos = 0
-			return
+			pos = 0
 		}
 		if pos > 1 {
-			s.pos = 1
-			return
+			pos = 1
+		}
+		if s.horiz {
+			width := s.ContentWidth()
+			if width == 0 {
+				s.pos = pos
+				return
+			}
+			p := width*pos - s.spacer.Width()/2
+			if p < min {
+				s.pos = (min + s.spacer.Width()/2) / width
+			} else if p > max {
+				s.pos = (max + s.spacer.Width()/2) / width
+			} else {
+				s.pos = pos
+			}
+		} else {
+			height := s.ContentHeight()
+			if height == 0 {
+				s.pos = pos
+				return
+			}
+			p := height*pos - s.spacer.Height()/2
+			if p < min {
+				s.pos = (min + s.spacer.Height()/2) / height
+			} else if p > max {
+				s.pos = (max + s.spacer.Height()/2) / height
+			} else {
+				s.pos = pos
+			}
+		}
+	} else {
+		if pos < min {
+			s.pos = min
+		} else if pos > max {
+			s.pos = max
+		} else {
+			s.pos = pos
 		}
 	}
-	s.pos = pos
 }
 
 // update updates the splitter visual state
@@ -250,9 +352,9 @@ func (s *Splitter) recalc() {
 	if s.horiz {
 		// Calculate x position for spacer panel
 		var spx float32
-		if s.SplitType == Relative {
+		if s.splitType == Relative {
 			spx = width*s.pos - s.spacer.Width()/2
-		} else if s.SplitType == Absolute {
+		} else if s.splitType == Absolute {
 			spx = s.pos
 		} else {
 			spx = width - s.pos - s.spacer.Width()
@@ -275,9 +377,9 @@ func (s *Splitter) recalc() {
 	} else {
 		// Calculate y position for spacer panel
 		var spy float32
-		if s.SplitType == Relative {
+		if s.splitType == Relative {
 			spy = height*s.pos - s.spacer.Height()/2
-		} else if s.SplitType == Absolute {
+		} else if s.splitType == Absolute {
 			spy = s.pos
 		} else {
 			spy = height - s.pos - s.spacer.Height()
