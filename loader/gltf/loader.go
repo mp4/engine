@@ -19,6 +19,7 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/sansebasko/engine/animation"
 	"github.com/sansebasko/engine/camera"
 	"github.com/sansebasko/engine/core"
 	"github.com/sansebasko/engine/geometry"
@@ -27,7 +28,6 @@ import (
 	"github.com/sansebasko/engine/material"
 	"github.com/sansebasko/engine/math32"
 	"github.com/sansebasko/engine/texture"
-	"github.com/sansebasko/engine/animation"
 )
 
 // ParseJSON parses the glTF data from the specified JSON file
@@ -297,7 +297,7 @@ func (g *GLTF) LoadSkin(skinIdx int) (*graphic.Skeleton, error) {
 			return nil, err
 		}
 		var ibm math32.Matrix4
-		ibmData.GetMatrix4(16 * i, &ibm)
+		ibmData.GetMatrix4(16*i, &ibm)
 		skeleton.AddBone(jointNode.GetNode(), &ibm)
 	}
 
@@ -703,7 +703,7 @@ func (g *GLTF) LoadMaterial(matIdx int) (material.IMaterial, error) {
 				imat, err = g.loadMaterialCommon(extData)
 			} else if ext == KhrMaterialsUnlit {
 				//imat, err = g.loadMaterialUnlit(matData, extData)
-			//} else if ext == KhrMaterialsPbrSpecularGlossiness {
+				//} else if ext == KhrMaterialsPbrSpecularGlossiness {
 			} else {
 				return nil, fmt.Errorf("unsupported extension:%s", ext)
 			}

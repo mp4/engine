@@ -5,9 +5,9 @@
 package gui
 
 import (
+	"github.com/sansebasko/engine/gui/assets/icon"
 	"github.com/sansebasko/engine/math32"
 	"github.com/sansebasko/engine/window"
-	"github.com/sansebasko/engine/gui/assets/icon"
 )
 
 /*********************************************
@@ -37,8 +37,8 @@ type Window struct {
 	title       *WindowTitle // internal optional title panel
 	client      Panel        // internal client panel
 	resizable   bool         // Specifies whether the window is resizable
-	drag        bool    // Whether the mouse buttons is pressed (i.e. when dragging)
-	dragPadding float32 // Extra width used to resize (in addition to border sizes)
+	drag        bool         // Whether the mouse buttons is pressed (i.e. when dragging)
+	dragPadding float32      // Extra width used to resize (in addition to border sizes)
 
 	// To keep track of which window borders the cursor is over
 	overTop    bool
@@ -177,7 +177,7 @@ func (w *Window) onCursor(evname string, ev interface{}) {
 			if w.overRight {
 				delta := cev.Xpos - (w.pospix.X + w.width)
 				newWidth := w.Width() + delta
-				w.SetWidth(math32.Max(newWidth, w.title.label.Width() + w.title.closeButton.Width()))
+				w.SetWidth(math32.Max(newWidth, w.title.label.Width()+w.title.closeButton.Width()))
 			}
 			if w.overBottom {
 				delta := cev.Ypos - (w.pospix.Y + w.height)
@@ -208,20 +208,20 @@ func (w *Window) onCursor(evname string, ev interface{}) {
 				w.overTop = false
 			}
 			// Check if cursor is on the bottom of the window (border + drag margin)
-			if cy >= w.height-w.borderSizes.Bottom - w.dragPadding {
+			if cy >= w.height-w.borderSizes.Bottom-w.dragPadding {
 				w.overBottom = true
 			} else {
 				w.overBottom = false
 			}
 			// Check if cursor is on the left of the window (border + drag margin)
-			if cx <= w.borderSizes.Left + w.dragPadding {
+			if cx <= w.borderSizes.Left+w.dragPadding {
 				w.overLeft = true
 				w.root.SetCursorHResize()
 			} else {
 				w.overLeft = false
 			}
 			// Check if cursor is on the right of the window (border + drag margin)
-			if cx >= w.width-w.borderSizes.Right - w.dragPadding {
+			if cx >= w.width-w.borderSizes.Right-w.dragPadding {
 				w.overRight = true
 				w.root.SetCursorHResize()
 			} else {
@@ -296,7 +296,7 @@ func (w *Window) recalc() {
 
 // WindowTitle represents the title bar of a Window
 type WindowTitle struct {
-	Panel              // Embedded panel
+	Panel                      // Embedded panel
 	win                *Window // Window to which this title belongs
 	label              Label   // Label for the title
 	pressed            bool    // Whether the left mouse button is pressed
@@ -304,14 +304,14 @@ type WindowTitle struct {
 	closeButtonVisible bool    // Whether the close button is present
 
 	// Last mouse coordinates
-	mouseX             float32
-	mouseY             float32
+	mouseX float32
+	mouseY float32
 }
 
 // WindowTitleStyle contains the styling for a window title.
 type WindowTitleStyle struct {
 	PanelStyle
-	FgColor     math32.Color4
+	FgColor math32.Color4
 }
 
 // newWindowTitle creates and returns a pointer to a window title panel.

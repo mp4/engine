@@ -7,17 +7,16 @@ package physics
 
 import (
 	"github.com/sansebasko/engine/core"
-	"github.com/sansebasko/engine/math32"
+	"github.com/sansebasko/engine/experimental/collision"
 	"github.com/sansebasko/engine/geometry"
 	"github.com/sansebasko/engine/gls"
 	"github.com/sansebasko/engine/graphic"
 	"github.com/sansebasko/engine/material"
-	"github.com/sansebasko/engine/experimental/collision"
+	"github.com/sansebasko/engine/math32"
 )
 
 // This file contains helpful infrastructure for debugging physics
 type DebugHelper struct {
-
 }
 
 func ShowWorldFace(scene *core.Node, face []math32.Vector3, color *math32.Color) {
@@ -40,7 +39,7 @@ func ShowWorldFace(scene *core.Node, face []math32.Vector3, color *math32.Color)
 	scene.Add(faceGraphic)
 }
 
-func ShowPenAxis(scene *core.Node, axis *math32.Vector3) {//}, min, max float32) {
+func ShowPenAxis(scene *core.Node, axis *math32.Vector3) { //}, min, max float32) {
 
 	vertices := math32.NewArrayF32(0, 16)
 
@@ -65,7 +64,7 @@ func ShowPenAxis(scene *core.Node, axis *math32.Vector3) {//}, min, max float32)
 	geom := geometry.NewGeometry()
 	geom.AddVBO(gls.NewVBO(vertices).AddAttrib(gls.VertexPosition))
 
-	mat := material.NewStandard(&math32.Color{1,1,1})
+	mat := material.NewStandard(&math32.Color{1, 1, 1})
 	faceGraphic := graphic.NewLines(geom, mat)
 	scene.Add(faceGraphic)
 }
@@ -88,7 +87,7 @@ func ShowContact(scene *core.Node, contact *collision.Contact) {
 	geom := geometry.NewGeometry()
 	geom.AddVBO(gls.NewVBO(vertices).AddAttrib(gls.VertexPosition))
 
-	mat := material.NewStandard(&math32.Color{0,0,1})
+	mat := material.NewStandard(&math32.Color{0, 0, 1})
 	faceGraphic := graphic.NewLines(geom, mat)
 	scene.Add(faceGraphic)
 }

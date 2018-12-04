@@ -7,13 +7,13 @@ package window
 import (
 	"runtime"
 
-	"github.com/sansebasko/engine/core"
+	"bytes"
 	"github.com/go-gl/glfw/v3.2/glfw"
-	"os"
+	"github.com/sansebasko/engine/core"
+	"github.com/sansebasko/engine/gui/assets"
 	"image"
 	_ "image/png"
-	"bytes"
-	"github.com/sansebasko/engine/gui/assets"
+	"os"
 )
 
 // glfwManager contains data shared by all windows
@@ -26,8 +26,8 @@ type glfwManager struct {
 	vresizeCursor   *glfw.Cursor // Preallocated standard vertical resize cursor
 
 	// Non GLFW standard cursors (but g3n standard)
-	diag1Cursor     *glfw.Cursor // Preallocated diagonal resize cursor (/)
-	diag2Cursor     *glfw.Cursor // Preallocated diagonal resize cursor (\)
+	diag1Cursor *glfw.Cursor // Preallocated diagonal resize cursor (/)
+	diag2Cursor *glfw.Cursor // Preallocated diagonal resize cursor (\)
 
 	// User-created custom cursors
 	customCursors map[int]*glfw.Cursor
@@ -48,13 +48,13 @@ type glfwWindow struct {
 	scaleY          float64
 
 	// Events
-	keyEv           KeyEvent
-	charEv          CharEvent
-	mouseEv         MouseEvent
-	posEv           PosEvent
-	sizeEv          SizeEvent
-	cursorEv        CursorEvent
-	scrollEv        ScrollEvent
+	keyEv    KeyEvent
+	charEv   CharEvent
+	mouseEv  MouseEvent
+	posEv    PosEvent
+	sizeEv   SizeEvent
+	cursorEv CursorEvent
+	scrollEv ScrollEvent
 }
 
 // glfw manager singleton

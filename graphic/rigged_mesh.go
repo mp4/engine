@@ -5,10 +5,10 @@
 package graphic
 
 import (
-	"github.com/sansebasko/engine/gls"
-	"strconv"
 	"github.com/sansebasko/engine/core"
+	"github.com/sansebasko/engine/gls"
 	"github.com/sansebasko/engine/math32"
+	"strconv"
 )
 
 // MaxBoneInfluencers is the maximum number of bone influencers per vertex.

@@ -307,7 +307,7 @@ func (r *Renderer) renderScene(iscene core.INode, icam camera.ICamera) error {
 				rO1 := gr1.RenderOrder()
 				rO2 := gr2.RenderOrder()
 				if rO1 != rO2 {
-					return  rO1 < rO2
+					return rO1 < rO2
 				}
 
 				mvm1 := gr1.ModelViewMatrix()

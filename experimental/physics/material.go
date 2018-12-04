@@ -34,7 +34,6 @@ func NewContactMaterial() *ContactMaterial {
 	return cm
 }
 
-
 //type intPair struct {
 //	i int
 //	j int

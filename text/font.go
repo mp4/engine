@@ -5,8 +5,8 @@
 package text
 
 import (
-	"github.com/sansebasko/engine/math32"
 	"github.com/golang/freetype/truetype"
+	"github.com/sansebasko/engine/math32"
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
 	"image"

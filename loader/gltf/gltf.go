@@ -10,10 +10,10 @@ import (
 	"github.com/sansebasko/engine/camera"
 	"github.com/sansebasko/engine/core"
 	"github.com/sansebasko/engine/gls"
+	"github.com/sansebasko/engine/graphic"
 	"github.com/sansebasko/engine/material"
 	"github.com/sansebasko/engine/math32"
 	"image"
-	"github.com/sansebasko/engine/graphic"
 )
 
 // glTF Extensions.
@@ -325,9 +325,9 @@ type Sparse struct {
 type Target struct {
 	Node int    // The index of the node to target. Not required.
 	Path string // The name of the node's TRS property to modify, or the "weights" of the Morph Targets it instantiates. Required.
-	            // For the "translation" property, the values that are provided by the sampler are the translation along the x, y, and z axes.
-	            // For the "rotation" property, the values are a quaternion in the order (x, y, z, w), where w is the scalar.
-	            // For the "scale" property, the values are the scaling factors along the x, y, and z axes.
+	// For the "translation" property, the values that are provided by the sampler are the translation along the x, y, and z axes.
+	// For the "rotation" property, the values are a quaternion in the order (x, y, z, w), where w is the scalar.
+	// For the "scale" property, the values are the scaling factors along the x, y, and z axes.
 	Extensions map[string]interface{} // Dictionary object with extension-specific objects. Not required.
 	Extras     interface{}            // Application-specific data. Not required.
 }

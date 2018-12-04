@@ -7,7 +7,7 @@ package graphic
 import (
 	"github.com/sansebasko/engine/core"
 	"github.com/sansebasko/engine/math32"
-	)
+)
 
 // Skeleton contains armature information.
 type Skeleton struct {
