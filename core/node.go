@@ -20,6 +20,7 @@ type INode interface {
 	Render(gs *gls.GLS)
 	Clone() INode
 	Dispose()
+	Children() []INode
 }
 
 // Node represents an object in 3D space existing within a hierarchy.

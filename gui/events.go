@@ -10,22 +10,25 @@ import (
 
 // Consolidate window events plus GUI events
 const (
-	OnClick       = "gui.OnClick"       // Widget clicked by mouse left button or key
-	OnCursor      = window.OnCursor     // cursor (mouse) position events
-	OnCursorEnter = "gui.OnCursorEnter" // cursor enters the panel area
-	OnCursorLeave = "gui.OnCursorLeave" // cursor leaves the panel area
-	OnMouseDown   = window.OnMouseDown  // any mouse button is pressed
-	OnMouseUp     = window.OnMouseUp    // any mouse button is released
-	OnMouseOut    = "gui.OnMouseOut"    // mouse button pressed outside of the panel
-	OnKeyDown     = window.OnKeyDown    // key is pressed
-	OnKeyUp       = window.OnKeyUp      // key is released
-	OnKeyRepeat   = window.OnKeyRepeat  // key is pressed again by automatic repeat
-	OnChar        = window.OnChar       // key is pressed and has unicode
-	OnResize      = "gui.OnResize"      // panel size changed (no parameters)
-	OnEnable      = "gui.OnEnable"      // panel enabled state changed (no parameters)
-	OnChange      = "gui.OnChange"      // onChange is emitted by List, DropDownList, CheckBox and Edit
-	OnScroll      = window.OnScroll     // scroll event
-	OnChild       = "gui.OnChild"       // child added to or removed from panel
-	OnRadioGroup  = "gui.OnRadioGroup"  // radio button from a group changed state
-	OnRightClick  = "gui.OnRightClick"  // Widget clicked by mouse right button
+	OnClick        = "gui.OnClick"                    // Widget clicked by mouse left button or key
+	OnCursor       = window.OnCursor                  // cursor (mouse) position events
+	OnCursorEnter  = "gui.OnCursorEnter"              // cursor enters the panel area
+	OnCursorLeave  = "gui.OnCursorLeave"              // cursor leaves the panel area
+	OnMouseDown    = window.OnMouseDown               // any mouse button is pressed
+	OnMouseUp      = window.OnMouseUp                 // any mouse button is released
+	OnMouseOut     = "gui.OnMouseOut"                 // mouse button pressed outside of the panel
+	OnKeyDown      = window.OnKeyDown                 // key is pressed
+	OnKeyUp        = window.OnKeyUp                   // key is released
+	OnKeyRepeat    = window.OnKeyRepeat               // key is pressed again by automatic repeat
+	OnChar         = window.OnChar                    // key is pressed and has unicode
+	OnResize       = "gui.OnResize"                   // panel size changed (no parameters)
+	OnEnable       = "gui.OnEnable"                   // panel enabled state changed (no parameters)
+	OnChange       = "gui.OnChange"                   // onChange is emitted by List, DropDownList, CheckBox and Edit
+	OnScroll       = window.OnScroll                  // scroll event
+	OnChild        = "gui.OnChild"                    // child added to or removed from panel
+	OnRadioGroup   = "gui.OnRadioGroup"               // radio button from a group changed state
+	OnRightClick   = "gui.OnRightClick"               // Widget clicked by mouse right button
+	OnBeforeRender = "util.application.OnAfterRender" // dispatched just before rendering the scene/gui
+	OnAfterRender  = "util.application.OnAfterRender" // dispatched just after rendering the scene/gui
+	OnQuit         = "util.application.OnQuit"        // the user tries to close the window or the application.Quit() method is called
 )
