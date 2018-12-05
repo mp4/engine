@@ -430,7 +430,10 @@ func (app *Application) Run() error {
 		// or by calling Quit(), dispatch OnQuit event for subscribers.
 		// If no subscriber cancelled the event, terminates the application.
 		if app.win.ShouldClose() {
-			canceled := dispatchRecursive(gui.OnQuit, nil, app.scene.Children())
+			canceled := app.Dispatch(gui.OnQuit, nil)
+			if !canceled {
+				canceled = dispatchRecursive(gui.OnQuit, nil, app.scene.Children())
+			}
 			if !canceled {
 				canceled = dispatchRecursive(gui.OnQuit, nil, app.guiroot.Children())
 			}
@@ -458,6 +461,7 @@ func (app *Application) Run() error {
 		app.ProcessTimers()
 
 		// Dispatch before render event
+		app.Dispatch(gui.OnBeforeRender, nil)
 		dispatchRecursive(gui.OnBeforeRender, nil, app.scene.Children())
 		dispatchRecursive(gui.OnBeforeRender, nil, app.guiroot.Children())
 
@@ -475,6 +479,7 @@ func (app *Application) Run() error {
 		}
 
 		// Dispatch after render event
+		app.Dispatch(gui.OnAfterRender, nil)
 		dispatchRecursive(gui.OnAfterRender, nil, app.scene.Children())
 		dispatchRecursive(gui.OnAfterRender, nil, app.guiroot.Children())
 
