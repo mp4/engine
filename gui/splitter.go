@@ -100,6 +100,11 @@ func newSplitter(horiz bool, width, height float32) *Splitter {
 	s.spacer.Subscribe(OnCursor, s.onCursor)
 	s.spacer.Subscribe(OnCursorEnter, s.onCursor)
 	s.spacer.Subscribe(OnCursorLeave, s.onCursor)
+	s.spacer.Subscribe(OnAfterRender, func(evname string, ev interface{}) {
+		if s.splitType == Relative {
+			s.SetSplit(s.Split())
+		}
+	})
 	s.update()
 	s.recalc()
 	return s
