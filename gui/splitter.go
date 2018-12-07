@@ -20,10 +20,10 @@ type Splitter struct {
 	spacer    Panel           // spacer panel
 	horiz     bool            // horizontal or vertical splitter
 	pos       float32         // relative position (0 to 1) of the center of the spacer panel (split type == Relative) or absolute position in pixels from left (split type == Absolute) or from right plus spacer width (split type == ReverseAbsolute)
-	min1      int             // minimal number of pixels of the top/left
-	max1      int             // maximal number of pixels of the top/left
-	min2      int             // minimal number of pixels of the bottom/right
-	max2      int             // maximal number of pixels of the bottom/right
+	min0      int             // minimal number of pixels of the top/left
+	max0      int             // maximal number of pixels of the top/left
+	min1      int             // minimal number of pixels of the bottom/right
+	max1      int             // maximal number of pixels of the bottom/right
 	posLast   float32         // last position in pixels of the mouse cursor when dragging
 	pressed   bool            // mouse button is pressed and dragging
 	mouseOver bool            // mouse is over the spacer panel
@@ -72,10 +72,10 @@ func newSplitter(horiz bool, width, height float32) *Splitter {
 	s := new(Splitter)
 	s.splitType = Relative
 	s.pos = 0.5
+	s.min0 = 0
+	s.max0 = math.MaxInt32
 	s.min1 = 0
 	s.max1 = math.MaxInt32
-	s.min2 = 0
-	s.max2 = math.MaxInt32
 	s.horiz = horiz
 	s.styles = &StyleDefault().Splitter
 	s.Panel.Initialize(width, height)
@@ -127,6 +127,44 @@ func (s *Splitter) SplitType() SplitType {
 }
 
 // SetSplitMin sets the minimal number of pixels of the top/left panel
+func (s *Splitter) SetSplitMin0(min int) {
+
+	if min < 0 {
+		s.min0 = 0
+	} else if min > s.max0 {
+		s.min0, s.max0 = s.max0, min
+	} else {
+		s.min0 = min
+	}
+	s.SetSplit(s.pos)
+}
+
+// SplitMin returns the minimal number of pixels of the top/left panel
+func (s *Splitter) SplitMin0() int {
+
+	return s.min0
+}
+
+// SetSplitMax sets the maximal number of pixels of the top/left panel
+func (s *Splitter) SetSplitMax0(max int) {
+
+	if max < 0 {
+		s.max0 = 0
+	} else if max < s.min0 {
+		s.min0, s.max0 = max, s.min0
+	} else {
+		s.max0 = max
+	}
+	s.SetSplit(s.pos)
+}
+
+// SplitMax returns the maximal number of pixels of the top/left panel
+func (s *Splitter) SplitMax0() int {
+
+	return s.max0
+}
+
+// SetSplitMin sets the minimal number of pixels of the bottom/right panel
 func (s *Splitter) SetSplitMin1(min int) {
 
 	if min < 0 {
@@ -139,13 +177,13 @@ func (s *Splitter) SetSplitMin1(min int) {
 	s.SetSplit(s.pos)
 }
 
-// SplitMin returns the minimal number of pixels of the top/left panel
+// SplitMin returns the minimal number of pixels of the bottom/right panel
 func (s *Splitter) SplitMin1() int {
 
 	return s.min1
 }
 
-// SetSplitMax sets the maximal number of pixels of the top/left panel
+// SetSplitMax sets the maximal number of pixels of the bottom/right panel
 func (s *Splitter) SetSplitMax1(max int) {
 
 	if max < 0 {
@@ -158,48 +196,10 @@ func (s *Splitter) SetSplitMax1(max int) {
 	s.SetSplit(s.pos)
 }
 
-// SplitMax returns the maximal number of pixels of the top/left panel
+// SplitMax returns the maximal number of pixels of the bottom/right panel
 func (s *Splitter) SplitMax1() int {
 
 	return s.max1
-}
-
-// SetSplitMin sets the minimal number of pixels of the bottom/right panel
-func (s *Splitter) SetSplitMin2(min int) {
-
-	if min < 0 {
-		s.min2 = 0
-	} else if min > s.max2 {
-		s.min2, s.max2 = s.max2, min
-	} else {
-		s.min2 = min
-	}
-	s.SetSplit(s.pos)
-}
-
-// SplitMin returns the minimal number of pixels of the bottom/right panel
-func (s *Splitter) SplitMin2() int {
-
-	return s.min2
-}
-
-// SetSplitMax sets the maximal number of pixels of the bottom/right panel
-func (s *Splitter) SetSplitMax2(max int) {
-
-	if max < 0 {
-		s.max2 = 0
-	} else if max < s.min2 {
-		s.min2, s.max2 = max, s.min2
-	} else {
-		s.max2 = max
-	}
-	s.SetSplit(s.pos)
-}
-
-// SplitMax returns the maximal number of pixels of the bottom/right panel
-func (s *Splitter) SplitMax2() int {
-
-	return s.max2
 }
 
 // SetSplit sets the position of the splitter bar.
@@ -245,7 +245,7 @@ func (s *Splitter) onMouse(evname string, ev interface{}) {
 			s.root.SetCursorNormal()
 			s.root.SetMouseFocus(nil)
 		} else if mev.Button == window.MouseButtonRight && s.pressed {
-			s.SetSplit(float32(s.min1))
+			s.SetSplit(float32(s.min0))
 		}
 		s.pressed = false
 	default:
@@ -344,8 +344,8 @@ func (s *Splitter) setSplit(pos float32) {
 }
 
 func (s *Splitter) _adjustToTopLeftConstraints(pos, l, sl float32) float32 {
-	min := float32(s.min1)
-	max := float32(s.max1)
+	min := float32(s.min0)
+	max := float32(s.max0)
 	if s.splitType == Relative {
 		p := l*pos - sl/2
 		if p < min {
@@ -366,8 +366,8 @@ func (s *Splitter) _adjustToTopLeftConstraints(pos, l, sl float32) float32 {
 }
 
 func (s *Splitter) _adjustToBottomRightConstraints(pos, l, sl float32) float32 {
-	min := float32(s.min2)
-	max := float32(s.max2)
+	min := float32(s.min1)
+	max := float32(s.max1)
 	if s.splitType == Relative {
 		p := l*pos + sl/2
 		if p > l-min {
