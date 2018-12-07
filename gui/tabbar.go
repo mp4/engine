@@ -14,15 +14,15 @@ import (
 // Only one panel is visible at a time.
 // To show another panel the corresponding Tab must be selected.
 type TabBar struct {
-	Panel                    // Embedded panel
-	styles     *TabBarStyles // Pointer to current styles
-	tabs       []*Tab        // Array of tabs
-	separator  Panel         // Separator Panel
-	listButton *Label        // Icon for tab list button
-	list       *List         // List for not visible tabs
-	selected   int           // Index of the selected tab
-	cursorOver bool          // Cursor over TabBar panel flag
-	defaultLabelAlign Align  // Default label align
+	Panel                           // Embedded panel
+	styles            *TabBarStyles // Pointer to current styles
+	tabs              []*Tab        // Array of tabs
+	separator         Panel         // Separator Panel
+	listButton        *Label        // Icon for tab list button
+	list              *List         // List for not visible tabs
+	selected          int           // Index of the selected tab
+	cursorOver        bool          // Cursor over TabBar panel flag
+	defaultLabelAlign Align         // Default label align
 }
 
 // TabBarStyle describes the style of the TabBar
@@ -408,7 +408,7 @@ type Tab struct {
 	styles     *TabStyles // Pointer to Tab current styles
 	header     Panel      // Tab header
 	label      *Label     // Tab user label
-	labelAlign Align     // Tab user label align
+	labelAlign Align      // Tab user label align
 	iconClose  *Label     // Tab close icon
 	icon       *Label     // Tab optional user icon
 	image      *Image     // Tab optional user image
@@ -708,9 +708,9 @@ func (tab *Tab) recalc(width float32) {
 		labx = tab.image.Width()
 	}
 	if tab.labelAlign == AlignCenter {
-		labx = (tab.header.ContentWidth()-labx-tab.label.ContentWidth())/2
+		labx = (tab.header.ContentWidth() - labx - tab.label.ContentWidth()) / 2
 	} else if tab.labelAlign == AlignRight {
-		labx = tab.header.ContentWidth()-tab.label.ContentWidth()
+		labx = tab.header.ContentWidth() - tab.label.ContentWidth()
 		if tab.iconClose.Visible() {
 			labx -= tab.iconClose.Width()
 		}
