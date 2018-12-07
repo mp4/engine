@@ -14,15 +14,16 @@ import (
 // Only one panel is visible at a time.
 // To show another panel the corresponding Tab must be selected.
 type TabBar struct {
-	Panel                           // Embedded panel
-	styles            *TabBarStyles // Pointer to current styles
-	tabs              []*Tab        // Array of tabs
-	separator         Panel         // Separator Panel
-	listButton        *Label        // Icon for tab list button
-	list              *List         // List for not visible tabs
-	selected          int           // Index of the selected tab
-	cursorOver        bool          // Cursor over TabBar panel flag
-	defaultLabelAlign Align         // Default label align
+	Panel                                  // Embedded panel
+	styles                   *TabBarStyles // Pointer to current styles
+	tabs                     []*Tab        // Array of tabs
+	separator                Panel         // Separator Panel
+	listButton               *Label        // Icon for tab list button
+	list                     *List         // List for not visible tabs
+	selected                 int           // Index of the selected tab
+	cursorOver               bool          // Cursor over TabBar panel flag
+	labelAlign               Align         // Label align of all tabs
+	consistentTabHeaderWidth bool          // Consistent tab header width (true) or only as width as needed (false)
 }
 
 // TabBarStyle describes the style of the TabBar
@@ -61,7 +62,8 @@ func NewTabBar(width, height float32) *TabBar {
 
 	// Creates new TabBar
 	tb := new(TabBar)
-	tb.defaultLabelAlign = AlignLeft
+	tb.consistentTabHeaderWidth = true
+	tb.labelAlign = AlignLeft
 	tb.Initialize(width, height)
 	tb.styles = &StyleDefault().TabBar
 	tb.tabs = make([]*Tab, 0)
@@ -96,20 +98,31 @@ func NewTabBar(width, height float32) *TabBar {
 	return tb
 }
 
-// DefaultLabelAlign returns the default align of all its tab labels
-func (tb *TabBar) DefaultLabelAlign() Align {
-	return tb.defaultLabelAlign
+// LabelAlign returns the align of all its tab labels
+func (tb *TabBar) LabelAlign() Align {
+	return tb.labelAlign
 }
 
-// SetDefaultLabelAlign sets the default align for all its tab labels if either AlignCenter,
+// SetLabelAlign sets the align for all its tab labels if either AlignCenter,
 // AlignLeft or AlignRight is specified, in which case true is returned.
 // Otherwise nothing happens and false is returned.
-func (tb *TabBar) SetDefaultLabelAlign(align Align) bool {
+func (tb *TabBar) SetLabelAlign(align Align) bool {
 	if align == AlignCenter || align == AlignLeft || align == AlignRight {
-		tb.defaultLabelAlign = align
+		tb.labelAlign = align
 		return true
 	}
 	return false
+}
+
+// ConsistentTabHeaderWidth returns true if all its tab headers share a consistent width.
+// Otherwise returns false, i.e. each tab header is only as wide as needed.
+func (tb *TabBar) ConsistentTabHeaderWidth() bool {
+	return tb.consistentTabHeaderWidth
+}
+
+// SetConsistentTabHeaderWidth affects the width of all its tab headers.
+func (tb *TabBar) SetConsistentTabHeaderWidth(flag bool) {
+	tb.consistentTabHeaderWidth = flag
 }
 
 // AddTab creates and adds a new Tab panel with the specified header text
@@ -428,7 +441,7 @@ func newTab(text string, tb *TabBar, styles *TabStyles) *Tab {
 	// Setup the header panel
 	tab.header.Initialize(0, 0)
 	tab.label = NewLabel(text)
-	tab.labelAlign = tab.tb.defaultLabelAlign
+	tab.labelAlign = tab.tb.labelAlign
 	tab.iconClose = NewIcon(styles.IconClose)
 	tab.header.Add(tab.label)
 	tab.header.Add(tab.iconClose)
@@ -513,7 +526,7 @@ func (tab *Tab) onMouseIcon(evname string, ev interface{}) {
 
 	switch evname {
 	case OnMouseDown:
-		tab.tb.RemoveTab(tab.tb.TabPosition(tab))
+		_ = tab.tb.RemoveTab(tab.tb.TabPosition(tab))
 	default:
 		return
 	}
@@ -696,29 +709,42 @@ func (tab *Tab) recalc(width float32) {
 
 	height := tab.label.Height()
 	tab.header.SetContentHeight(height)
-	tab.header.SetWidth(width)
 
 	labx := float32(0)
+	lw := tab.label.ContentWidth()
+	thw := lw + 24
 	if tab.icon != nil {
 		icy := (tab.header.ContentHeight() - tab.icon.Height()) / 2
 		tab.icon.SetPosition(0, icy)
 		labx = tab.icon.Width()
+		thw += tab.icon.Width()
 	} else if tab.image != nil {
 		tab.image.SetPosition(0, 0)
 		labx = tab.image.Width()
+		thw += tab.image.Width()
+	}
+
+	if tab.tb.consistentTabHeaderWidth {
+		thw = width
+	}
+	tab.header.SetContentWidth(thw)
+
+	icw := float32(0)
+	if tab.iconClose.Visible() {
+		icw = tab.iconClose.Width()
 	}
 	if tab.labelAlign == AlignCenter {
-		labx = (tab.header.ContentWidth() - labx - tab.label.ContentWidth()) / 2
+		labx = (thw - icw - lw - labx) / 2
 	} else if tab.labelAlign == AlignRight {
-		labx = tab.header.ContentWidth() - tab.label.ContentWidth()
+		labx = thw - lw
 		if tab.iconClose.Visible() {
-			labx -= tab.iconClose.Width()
+			labx -= icw
 		}
 	}
 	tab.label.SetPosition(labx, 0)
 
 	// Sets the close icon position
-	icx := tab.header.ContentWidth() - tab.iconClose.Width()
+	icx := thw - tab.iconClose.Width()
 	icy := (tab.header.ContentHeight() - tab.iconClose.Height()) / 2
 	tab.iconClose.SetPosition(icx, icy)
 
