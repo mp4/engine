@@ -133,8 +133,7 @@ func (s *Splitter) SetSplitMin(min int) {
 	if min < 0 {
 		s.min = 0
 	} else if min > s.max {
-		s.min = s.max
-		s.max = min
+		s.min, s.max = s.max, min
 	} else {
 		s.min = min
 	}
@@ -159,8 +158,7 @@ func (s *Splitter) SetSplitMax(max int) {
 	if max < 0 {
 		s.max = 0
 	} else if max < s.min {
-		s.max = s.min
-		s.min = max
+		s.min, s.max = max, s.min
 	} else {
 		s.max = max
 	}
