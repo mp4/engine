@@ -22,6 +22,7 @@ type TabBar struct {
 	list       *List         // List for not visible tabs
 	selected   int           // Index of the selected tab
 	cursorOver bool          // Cursor over TabBar panel flag
+	defaultLabelAlign Align  // Default label align
 }
 
 // TabBarStyle describes the style of the TabBar
@@ -60,6 +61,7 @@ func NewTabBar(width, height float32) *TabBar {
 
 	// Creates new TabBar
 	tb := new(TabBar)
+	tb.defaultLabelAlign = AlignLeft
 	tb.Initialize(width, height)
 	tb.styles = &StyleDefault().TabBar
 	tb.tabs = make([]*Tab, 0)
@@ -92,6 +94,22 @@ func NewTabBar(width, height float32) *TabBar {
 	tb.recalc()
 	tb.update()
 	return tb
+}
+
+// DefaultLabelAlign returns the default align of all its tab labels
+func (tb *TabBar) DefaultLabelAlign() Align {
+	return tb.defaultLabelAlign
+}
+
+// SetDefaultLabelAlign sets the default align for all its tab labels if either AlignCenter,
+// AlignLeft or AlignRight is specified, in which case true is returned.
+// Otherwise nothing happens and false is returned.
+func (tb *TabBar) SetDefaultLabelAlign(align Align) bool {
+	if align == AlignCenter || align == AlignLeft || align == AlignRight {
+		tb.defaultLabelAlign = align
+		return true
+	}
+	return false
 }
 
 // AddTab creates and adds a new Tab panel with the specified header text
@@ -352,7 +370,7 @@ func (tb *TabBar) recalc() {
 			// Otherwise insert tab text in List
 		} else {
 			tab.header.SetVisible(false)
-			item := NewImageLabel(tab.label.Text())
+			item := NewImageLabel(tab.Label())
 			item.SetUserData(i)
 			tb.list.Add(item)
 		}
@@ -390,6 +408,7 @@ type Tab struct {
 	styles     *TabStyles // Pointer to Tab current styles
 	header     Panel      // Tab header
 	label      *Label     // Tab user label
+	labelAlign Align     // Tab user label align
 	iconClose  *Label     // Tab close icon
 	icon       *Label     // Tab optional user icon
 	image      *Image     // Tab optional user image
@@ -409,6 +428,7 @@ func newTab(text string, tb *TabBar, styles *TabStyles) *Tab {
 	// Setup the header panel
 	tab.header.Initialize(0, 0)
 	tab.label = NewLabel(text)
+	tab.labelAlign = tab.tb.defaultLabelAlign
 	tab.iconClose = NewIcon(styles.IconClose)
 	tab.header.Add(tab.label)
 	tab.header.Add(tab.iconClose)
@@ -426,6 +446,33 @@ func newTab(text string, tb *TabBar, styles *TabStyles) *Tab {
 
 	tab.update()
 	return tab
+}
+
+// Label returns the text of the tab label
+func (tab *Tab) Label() string {
+	return tab.label.Text()
+}
+
+// SetLabel sets the text of the tab label
+func (tab *Tab) SetLabel(text string) {
+	tab.label.SetText(text)
+	tab.tb.recalc()
+}
+
+// LabelAlign returns the align of the tab label
+func (tab *Tab) LabelAlign() Align {
+	return tab.labelAlign
+}
+
+// SetLabelAlign sets the align of the tab label if either AlignCenter,
+// AlignLeft or AlignRight is specified, in which case true is returned.
+// Otherwise nothing happens and false is returned.
+func (tab *Tab) SetLabelAlign(align Align) bool {
+	if align == AlignCenter || align == AlignLeft || align == AlignRight {
+		tab.labelAlign = align
+		return true
+	}
+	return false
 }
 
 // onCursor process subscribed cursor events over the tab header
@@ -659,6 +706,14 @@ func (tab *Tab) recalc(width float32) {
 	} else if tab.image != nil {
 		tab.image.SetPosition(0, 0)
 		labx = tab.image.Width()
+	}
+	if tab.labelAlign == AlignCenter {
+		labx = (tab.header.ContentWidth()-labx-tab.label.ContentWidth())/2
+	} else if tab.labelAlign == AlignRight {
+		labx = tab.header.ContentWidth()-tab.label.ContentWidth()
+		if tab.iconClose.Visible() {
+			labx -= tab.iconClose.Width()
+		}
 	}
 	tab.label.SetPosition(labx, 0)
 
