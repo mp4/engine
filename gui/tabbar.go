@@ -763,7 +763,7 @@ func (tab *Tab) setCoverPanel() {
 	if tab.selected {
 		w := tab.header.ContentWidth() + tab.header.Paddings().Left + tab.header.Paddings().Right
 		tab.cover.SetSize(w, tab.tb.styles.SepHeight)
-		x := tab.styles.Selected.Margin.Left + tab.styles.Selected.Border.Left
+		x := tab.header.Margins().Left + tab.header.Borders().Left
 		y := tab.header.Height()
 		if tab.tb.tabHeaderAlign == AlignBottom {
 			y = -tab.tb.styles.SepHeight
