@@ -37,7 +37,8 @@ type Button struct {
 // ToggleGroup holds only toggle buttons and ensures
 // that at most one of them is pressed at a time
 type ToggleGroup struct {
-	members []*Button // Slice of pointers to the toggle button members
+	members           []*Button // Slice of pointers to the toggle button members
+	UnpressingAllowed bool      // Whether unpressing is allowed for its members
 }
 
 // ButtonStyle contains the styling of a Button
@@ -96,8 +97,10 @@ func NewToggleButton(text string) *Button {
 }
 
 // NewToggleGroup creates and returns a pointer to a new toggle group.
-func NewToggleGroup() *ToggleGroup {
-	return new(ToggleGroup)
+func NewToggleGroup(allowUnpressing bool) *ToggleGroup {
+	tg := new(ToggleGroup)
+	tg.UnpressingAllowed = allowUnpressing
+	return tg
 }
 
 // Add adds the given button to the members of this toggle group if it is
@@ -141,6 +144,8 @@ func (tg *ToggleGroup) Contains(button *Button) bool {
 	return false
 }
 
+// unpressOthers unpresses all buttons contained in this toggle group except the
+// given one.
 func (tg *ToggleGroup) unpressOthers(button *Button) {
 	for _, b := range tg.members {
 		if b != button {
@@ -152,9 +157,30 @@ func (tg *ToggleGroup) unpressOthers(button *Button) {
 	}
 }
 
+// unpressingAllowed returns true if none of all toggle groups this button is a member of
+// disallows unpressing. Otherwise false is returned.
+func (b *Button) unpressingAllowed() bool {
+	for _, g := range b.groups {
+		if !g.UnpressingAllowed {
+			return false
+		}
+	}
+	return true
+}
+
 // IsPressed returns true if the button is pressed, otherwise false.
 func (b *Button) IsPressed() bool {
 	return b.pressed
+}
+
+// Press presses the button as if it were initiated by a mouse click.
+func (b *Button) Press() {
+	b.pressed = true
+	for _, g := range b.groups {
+		g.unpressOthers(b)
+	}
+	b.update()
+	b.Dispatch(OnClick, nil)
 }
 
 // SetIcon sets the button icon from the default Icon font.
@@ -225,17 +251,13 @@ func (b *Button) onMouse(evname string, ev interface{}) {
 	case OnMouseDown:
 		b.root.SetKeyFocus(b)
 		if !b.toggle {
-			b.pressed = true
-		} else {
-			b.pressed = !b.pressed
+			b.Press()
+		} else if !b.pressed {
+			b.Press()
+		} else if b.unpressingAllowed() {
+			b.pressed = false
+			b.update()
 		}
-		if b.pressed {
-			for _, g := range b.groups {
-				g.unpressOthers(b)
-			}
-		}
-		b.update()
-		b.Dispatch(OnClick, nil)
 	case OnMouseUp:
 		if !b.toggle {
 			b.pressed = false
@@ -253,17 +275,13 @@ func (b *Button) onKey(evname string, ev interface{}) {
 	kev := ev.(*window.KeyEvent)
 	if evname == OnKeyDown && kev.Keycode == window.KeyEnter {
 		if !b.toggle {
-			b.pressed = true
-		} else {
-			b.pressed = !b.pressed
+			b.Press()
+		} else if !b.pressed {
+			b.Press()
+		} else if b.unpressingAllowed() {
+			b.pressed = false
+			b.update()
 		}
-		if b.pressed {
-			for _, g := range b.groups {
-				g.unpressOthers(b)
-			}
-		}
-		b.update()
-		b.Dispatch(OnClick, nil)
 		b.root.StopPropagation(Stop3D)
 		return
 	}
