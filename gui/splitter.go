@@ -246,17 +246,16 @@ func (s *Splitter) onMouse(evname string, ev interface{}) {
 			}
 			s.root.SetMouseFocus(&s.spacer)
 		} else if mev.Button == window.MouseButtonRight {
+			s.root.SetCursorNormal()
 			s.rightPressed = true
+			s.SetSplit(float32(s.min0))
 		}
 	case OnMouseUp:
 		if mev.Button == window.MouseButtonLeft {
 			s.root.SetCursorNormal()
 			s.leftPressed = false
 			s.root.SetMouseFocus(nil)
-		} else if mev.Button == window.MouseButtonRight && s.rightPressed {
-			if s.mouseOver {
-				s.SetSplit(float32(s.min0))
-			}
+		} else if mev.Button == window.MouseButtonRight {
 			s.rightPressed = false
 		}
 	default:
