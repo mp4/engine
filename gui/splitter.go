@@ -25,7 +25,8 @@ type Splitter struct {
 	min1      int            // minimal number of pixels of the bottom/right
 	max1      int            // maximal number of pixels of the bottom/right
 	posLast   float32        // last position in pixels of the mouse cursor when dragging
-	pressed   bool           // mouse button is pressed and dragging
+	leftPressed   bool       // left mouse button is pressed and dragging
+	rightPressed   bool      // right mouse button is pressed and dragging
 	mouseOver bool           // mouse is over the spacer panel
 }
 
@@ -236,23 +237,28 @@ func (s *Splitter) onMouse(evname string, ev interface{}) {
 	mev := ev.(*window.MouseEvent)
 	switch evname {
 	case OnMouseDown:
-		s.pressed = true
 		if mev.Button == window.MouseButtonLeft {
+			s.leftPressed = true
 			if s.horiz {
 				s.posLast = mev.Xpos
 			} else {
 				s.posLast = mev.Ypos
 			}
 			s.root.SetMouseFocus(&s.spacer)
+		} else if mev.Button == window.MouseButtonRight {
+			s.rightPressed = true
 		}
 	case OnMouseUp:
 		if mev.Button == window.MouseButtonLeft {
 			s.root.SetCursorNormal()
+			s.leftPressed = false
 			s.root.SetMouseFocus(nil)
-		} else if mev.Button == window.MouseButtonRight && s.pressed {
-			s.SetSplit(float32(s.min0))
+		} else if mev.Button == window.MouseButtonRight && s.rightPressed {
+			if s.mouseOver {
+				s.SetSplit(float32(s.min0))
+			}
+			s.rightPressed = false
 		}
-		s.pressed = false
 	default:
 	}
 	s.root.StopPropagation(Stop3D)
@@ -274,7 +280,7 @@ func (s *Splitter) onCursor(evname string, ev interface{}) {
 		s.mouseOver = false
 		s.update()
 	} else if evname == OnCursor {
-		if !s.pressed {
+		if !s.leftPressed {
 			return
 		}
 		cev := ev.(*window.CursorEvent)
@@ -393,7 +399,7 @@ func (s *Splitter) _adjustToBottomRightConstraints(pos, l, sl float32) float32 {
 // update updates the splitter visual state
 func (s *Splitter) update() {
 
-	if s.pressed {
+	if s.leftPressed {
 		s.applyStyle(&s.styles.Drag)
 		return
 	}
