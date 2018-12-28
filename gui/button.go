@@ -38,7 +38,7 @@ type Button struct {
 // that at most one of them is pressed at a time
 type ToggleGroup struct {
 	members           []*Button // Slice of pointers to the toggle button members
-	UnpressingAllowed bool      // Whether depressing is allowed for its members
+	DepressingAllowed bool      // Whether depressing is allowed for its members
 }
 
 // ButtonStyle contains the styling of a Button
@@ -99,7 +99,7 @@ func NewToggleButton(text string) *Button {
 // NewToggleGroup creates and returns a pointer to a new toggle group.
 func NewToggleGroup(allowDepressing bool) *ToggleGroup {
 	tg := new(ToggleGroup)
-	tg.UnpressingAllowed = allowDepressing
+	tg.DepressingAllowed = allowDepressing
 	return tg
 }
 
@@ -161,7 +161,7 @@ func (tg *ToggleGroup) depressOthers(button *Button) {
 // disallows depressing. Otherwise false is returned.
 func (b *Button) depressingAllowed() bool {
 	for _, g := range b.groups {
-		if !g.UnpressingAllowed {
+		if !g.DepressingAllowed {
 			return false
 		}
 	}
