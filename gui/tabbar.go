@@ -6,7 +6,6 @@ package gui
 
 import (
 	"fmt"
-
 	"github.com/sansebasko/engine/window"
 )
 
@@ -22,7 +21,8 @@ type TabBar struct {
 	list                     *List         // List for not visible tabs
 	selected                 int           // Index of the selected tab
 	cursorOver               bool          // Cursor over TabBar panel flag
-	labelAlign               Align         // Label align of all tabs
+	labelAlign               Align         // Label align of all tabs (one of AlignCenter, AlignLeft, AlignRight)
+	tabHeaderAlign           Align         // Tab header align (one of AlignTop, AlignBottom)
 	consistentTabHeaderWidth bool          // Consistent tab header width (true) or only as width as needed (false)
 }
 
@@ -62,8 +62,9 @@ func NewTabBar(width, height float32) *TabBar {
 
 	// Creates new TabBar
 	tb := new(TabBar)
-	tb.consistentTabHeaderWidth = true
 	tb.labelAlign = AlignLeft
+	tb.tabHeaderAlign = AlignTop
+	tb.consistentTabHeaderWidth = true
 	tb.Initialize(width, height)
 	tb.styles = &StyleDefault().TabBar
 	tb.tabs = make([]*Tab, 0)
@@ -109,6 +110,22 @@ func (tb *TabBar) LabelAlign() Align {
 func (tb *TabBar) SetLabelAlign(align Align) bool {
 	if align == AlignCenter || align == AlignLeft || align == AlignRight {
 		tb.labelAlign = align
+		return true
+	}
+	return false
+}
+
+// TabHeaderAlign returns the align of the tab headers
+func (tb *TabBar) TabHeaderAlign() Align {
+	return tb.tabHeaderAlign
+}
+
+// SetTabHeaderAlign sets the align for all its tab headers if either AlignTop
+// or AlignBottom is specified, in which case true is returned.
+// Otherwise nothing happens and false is returned.
+func (tb *TabBar) SetTabHeaderAlign(align Align) bool {
+	if align == AlignTop || align == AlignBottom {
+		tb.tabHeaderAlign = align
 		return true
 	}
 	return false
@@ -363,20 +380,32 @@ func (tb *TabBar) recalc() {
 	if tabWidth < maxTabWidth {
 		tabWidth += (maxTabWidth - tabWidth) / 4
 	}
+	sepHeight := tb.styles.SepHeight
+
 	for i := 0; i < len(tb.tabs); i++ {
 		tab := tb.tabs[i]
 		// Recalculate Tab header and sets its position
 		tab.recalc(tabWidth)
-		tab.header.SetPosition(headerx, 0)
+
+		headery := float32(0)
+		if tb.tabHeaderAlign == AlignBottom {
+			headery = tb.ContentHeight() - tab.header.Height()
+		}
+		tab.header.SetPosition(headerx, headery)
+		headerx += tab.header.Width()
+
 		// Sets size and position of the Tab content panel
 		if tab.content != nil {
 			cpan := tab.content.GetPanel()
-			contenty := tab.header.Height() + tb.styles.SepHeight
 			cpan.SetWidth(tb.ContentWidth())
-			cpan.SetHeight(tb.ContentHeight() - contenty)
-			cpan.SetPosition(0, contenty)
+			if tb.tabHeaderAlign == AlignTop {
+				cpan.SetPosition(0, tab.header.Height()+sepHeight)
+				cpan.SetHeight(tb.ContentHeight() - cpan.Position().Y)
+			} else {
+				cpan.SetPosition(0, 0)
+				cpan.SetHeight(headery)
+			}
 		}
-		headerx += tab.header.Width()
 		// If Tab can be shown set its header visible
 		if i < count {
 			tab.header.SetVisible(true)
@@ -391,16 +420,26 @@ func (tb *TabBar) recalc() {
 
 	// Sets the separator size, position and visibility
 	if len(tb.tabs) > 0 {
-		tb.separator.SetSize(tb.ContentWidth(), tb.styles.SepHeight)
-		tb.separator.SetPositionY(tb.tabs[0].header.Height())
+		tb.separator.SetSize(tb.ContentWidth(), sepHeight)
+		if tb.tabHeaderAlign == AlignTop {
+			tb.separator.SetPositionY(tb.tabs[0].header.Height())
+		} else {
+			tb.separator.SetPositionY(tb.ContentHeight() - tb.tabs[0].header.Height() - sepHeight)
+		}
 		tb.separator.SetVisible(true)
 	} else {
 		tb.separator.SetVisible(false)
 	}
 }
 
-// update updates the TabBar visual state
+// update updates the TabBar visual style
 func (tb *TabBar) update() {
+
+	if tb.tabHeaderAlign == AlignBottom {
+		defer func() {
+			tb.paddingSizes.Top, tb.paddingSizes.Bottom = tb.paddingSizes.Bottom, tb.paddingSizes.Top
+		}()
+	}
 
 	if !tb.Enabled() {
 		tb.applyStyle(&tb.styles.Disabled)
@@ -425,7 +464,7 @@ type Tab struct {
 	iconClose  *Label     // Tab close icon
 	icon       *Label     // Tab optional user icon
 	image      *Image     // Tab optional user image
-	bottom     Panel      // Panel to cover the bottom edge of the Tab
+	cover      Panel      // Panel to cover the bottom/top edge of the Tab
 	content    IPanel     // User content panel
 	cursorOver bool
 	selected   bool
@@ -445,11 +484,11 @@ func newTab(text string, tb *TabBar, styles *TabStyles) *Tab {
 	tab.iconClose = NewIcon(styles.IconClose)
 	tab.header.Add(tab.label)
 	tab.header.Add(tab.iconClose)
-	// Creates the bottom panel
-	tab.bottom.Initialize(0, 0)
-	tab.bottom.SetBounded(false)
-	tab.bottom.SetColor4(&tab.styles.Selected.BgColor)
-	tab.header.Add(&tab.bottom)
+	// Creates the cover panel
+	tab.cover.Initialize(0, 0)
+	tab.cover.SetBounded(false)
+	tab.cover.SetColor4(&tab.styles.Selected.BgColor)
+	tab.header.Add(&tab.cover)
 
 	// Subscribe to header panel events
 	tab.header.Subscribe(OnCursorEnter, tab.onCursor)
@@ -647,9 +686,9 @@ func (tab *Tab) setSelected(selected bool) {
 	if tab.content != nil {
 		tab.content.GetPanel().SetVisible(selected)
 	}
-	tab.bottom.SetVisible(selected)
+	tab.cover.SetVisible(selected)
 	tab.update()
-	tab.setBottomPanel()
+	tab.setCoverPanel()
 }
 
 // minWidth returns the minimum width of this Tab header to allow
@@ -670,7 +709,7 @@ func (tab *Tab) minWidth() float32 {
 // applyStyle applies the specified Tab style to the Tab header
 func (tab *Tab) applyStyle(s *TabStyle) {
 
-	tab.header.GetPanel().ApplyStyle(&s.PanelStyle)
+	tab.header.ApplyStyle(&s.PanelStyle)
 }
 
 // update updates the Tab header visual style
@@ -678,28 +717,53 @@ func (tab *Tab) update() {
 
 	if !tab.header.Enabled() {
 		tab.applyStyle(&tab.styles.Disabled)
+		tab.advanceSelectedTab()
 		return
 	}
 	if tab.selected {
 		tab.applyStyle(&tab.styles.Selected)
+		tab.advanceSelectedTab()
 		return
 	}
 	if tab.cursorOver {
 		tab.applyStyle(&tab.styles.Over)
+		tab.advanceSelectedTab()
 		return
 	}
 	tab.applyStyle(&tab.styles.Normal)
+	tab.advanceSelectedTab()
 }
 
-// setBottomPanel sets the position and size of the Tab bottom panel
+// advanceSelectedTab advances the selected tab from the other ones
+func (tab *Tab) advanceSelectedTab() {
+	selectionAdvance := float32(3)
+	if tab.tb.tabHeaderAlign == AlignBottom {
+		tab.header.borderSizes.Top, tab.header.borderSizes.Bottom = tab.header.borderSizes.Bottom, tab.header.borderSizes.Top
+		if tab.selected {
+			tab.header.borderSizes.Bottom += selectionAdvance
+		} else {
+			tab.header.marginSizes.Bottom += selectionAdvance
+		}
+	} else if tab.selected {
+		tab.header.borderSizes.Top += selectionAdvance
+	} else {
+		tab.header.marginSizes.Top += selectionAdvance
+	}
+}
+
+// setBottomPanel sets the position and size of the Tab cover panel
 // to cover the Tabs separator
-func (tab *Tab) setBottomPanel() {
+func (tab *Tab) setCoverPanel() {
 
 	if tab.selected {
 		bwidth := tab.header.ContentWidth() + tab.header.Paddings().Left + tab.header.Paddings().Right
+		tab.cover.SetSize(bwidth, tab.tb.styles.SepHeight)
 		bx := tab.styles.Selected.Margin.Left + tab.styles.Selected.Border.Left
-		tab.bottom.SetSize(bwidth, tab.tb.styles.SepHeight)
-		tab.bottom.SetPosition(bx, tab.header.Height())
+		by := tab.header.Height()
+		if tab.tb.tabHeaderAlign == AlignBottom {
+			by = -1
+		}
+		tab.cover.SetPosition(bx, by)
 	}
 }
 
@@ -748,6 +812,6 @@ func (tab *Tab) recalc(width float32) {
 	icy := (tab.header.ContentHeight() - tab.iconClose.Height()) / 2
 	tab.iconClose.SetPosition(icx, icy)
 
-	// Sets the position of the bottom panel to cover separator
-	tab.setBottomPanel()
+	// Sets the position of the cover panel to cover separator
+	tab.setCoverPanel()
 }
