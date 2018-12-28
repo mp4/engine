@@ -23,13 +23,21 @@ import (
 
 // Button represents a button GUI element
 type Button struct {
-	*Panel                  // Embedded Panel
-	Label     *Label        // Label panel
-	image     *Image        // pointer to button image (may be nil)
-	icon      *Label        // pointer to button icon (may be nil
-	styles    *ButtonStyles // pointer to current button styles
-	mouseOver bool          // true if mouse is over button
-	pressed   bool          // true if button is pressed
+	*Panel                   // Embedded Panel
+	Label     *Label         // Label panel
+	image     *Image         // pointer to button image (may be nil)
+	icon      *Label         // pointer to button icon (may be nil
+	styles    *ButtonStyles  // pointer to current button styles
+	mouseOver bool           // true if mouse is over button
+	pressed   bool           // true if button is pressed
+	toggle    bool           // true if button is a toggle button
+	groups    []*ToggleGroup // Slice of pointers to all toggle groups the button is a member of
+}
+
+// ToggleGroup holds only toggle buttons and ensures
+// that at most one of them is pressed at a time
+type ToggleGroup struct {
+	members []*Button // Slice of pointers to the toggle button members
 }
 
 // ButtonStyle contains the styling of a Button
@@ -49,6 +57,7 @@ type ButtonStyles struct {
 func NewButton(text string) *Button {
 
 	b := new(Button)
+	b.toggle = false
 	b.styles = &StyleDefault().Button
 
 	// Initializes the button panel
@@ -73,6 +82,77 @@ func NewButton(text string) *Button {
 	b.recalc() // recalc first then update!
 	b.update()
 	return b
+}
+
+// NewToggleButton creates and returns a pointer to a new toggle button widget
+// with the specified text for the toggle button label.
+func NewToggleButton(text string) *Button {
+
+	b := NewButton(text)
+	b.toggle = true
+	b.styles = &StyleDefault().ToggleButton
+
+	return b
+}
+
+// NewToggleGroup creates and returns a pointer to a new toggle group.
+func NewToggleGroup() *ToggleGroup {
+	return new(ToggleGroup)
+}
+
+// Add adds the given button to the members of this toggle group if it is
+// not already contained and is indeed a toggle button, in which case true is returned.
+// Otherwise nothing happens and false is returned.
+func (tg *ToggleGroup) Add(toggleButton *Button) bool {
+	if !toggleButton.toggle || tg.Contains(toggleButton) {
+		return false
+	}
+	tg.members = append(tg.members, toggleButton)
+	toggleButton.groups = append(toggleButton.groups, tg)
+	return true
+}
+
+// Remove removes the given button from the members of this toggle group if it is
+// contained, in which case true is returned.
+// Otherwise nothing happens and false is returned.
+func (tg *ToggleGroup) Remove(button *Button) bool {
+	for i, b := range tg.members {
+		if b == button {
+			tg.members = append(tg.members[:i], tg.members[i+1:]...)
+			for i, g := range button.groups {
+				if g == tg {
+					button.groups = append(button.groups[:i], button.groups[i+1:]...)
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+// Contains returns true if the given button is a member of this toggle group.
+// Otherwise false is returned.
+func (tg *ToggleGroup) Contains(button *Button) bool {
+	for _, b := range tg.members {
+		if b == button {
+			return true
+		}
+	}
+	return false
+}
+
+func (tg *ToggleGroup) unpressOthers(button *Button) {
+	for _, b := range tg.members {
+		if b != button {
+			b.pressed = false
+			b.update()
+		}
+	}
+}
+
+// IsPressed returns true if the button is pressed, otherwise false.
+func (b *Button) IsPressed() bool {
+	return b.pressed
 }
 
 // SetIcon sets the button icon from the default Icon font.
@@ -127,7 +207,9 @@ func (b *Button) onCursor(evname string, ev interface{}) {
 		b.mouseOver = true
 		b.update()
 	case OnCursorLeave:
-		b.pressed = false
+		if !b.toggle {
+			b.pressed = false
+		}
 		b.mouseOver = false
 		b.update()
 	}
@@ -140,11 +222,22 @@ func (b *Button) onMouse(evname string, ev interface{}) {
 	switch evname {
 	case OnMouseDown:
 		b.root.SetKeyFocus(b)
-		b.pressed = true
+		if !b.toggle {
+			b.pressed = true
+		} else {
+			b.pressed = !b.pressed
+		}
+		if b.pressed {
+			for _, g := range b.groups {
+				g.unpressOthers(b)
+			}
+		}
 		b.update()
 		b.Dispatch(OnClick, nil)
 	case OnMouseUp:
-		b.pressed = false
+		if !b.toggle {
+			b.pressed = false
+		}
 		b.update()
 	default:
 		return
@@ -157,14 +250,25 @@ func (b *Button) onKey(evname string, ev interface{}) {
 
 	kev := ev.(*window.KeyEvent)
 	if evname == OnKeyDown && kev.Keycode == window.KeyEnter {
-		b.pressed = true
+		if !b.toggle {
+			b.pressed = true
+		} else {
+			b.pressed = !b.pressed
+		}
+		if b.pressed {
+			for _, g := range b.groups {
+				g.unpressOthers(b)
+			}
+		}
 		b.update()
 		b.Dispatch(OnClick, nil)
 		b.root.StopPropagation(Stop3D)
 		return
 	}
 	if evname == OnKeyUp && kev.Keycode == window.KeyEnter {
-		b.pressed = false
+		if !b.toggle {
+			b.pressed = false
+		}
 		b.update()
 		b.root.StopPropagation(Stop3D)
 		return

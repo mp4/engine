@@ -12,22 +12,22 @@ import (
 
 // Splitter is a GUI element that splits two panels and can be adjusted
 type Splitter struct {
-	Panel                    // Embedded panel
-	P0        Panel          // Left/Top panel
-	P1        Panel          // Right/Bottom panel
-	splitType SplitType      // relative (0-1), absolute (in pixels) or reverse absolute (in pixels)
-	styles    SplitterStyles // Current styles
-	spacer    Panel          // spacer panel
-	horiz     bool           // horizontal or vertical splitter
-	pos       float32        // relative position (0 to 1) of the center of the spacer panel (split type == Relative) or absolute position in pixels from left (split type == Absolute) or from right plus spacer width (split type == ReverseAbsolute)
-	min0      int            // minimal number of pixels of the top/left
-	max0      int            // maximal number of pixels of the top/left
-	min1      int            // minimal number of pixels of the bottom/right
-	max1      int            // maximal number of pixels of the bottom/right
-	posLast   float32        // last position in pixels of the mouse cursor when dragging
-	leftPressed   bool       // left mouse button is pressed and dragging
-	rightPressed   bool      // right mouse button is pressed and dragging
-	mouseOver bool           // mouse is over the spacer panel
+	Panel                       // Embedded panel
+	P0           Panel          // Left/Top panel
+	P1           Panel          // Right/Bottom panel
+	splitType    SplitType      // relative (0-1), absolute (in pixels) or reverse absolute (in pixels)
+	styles       SplitterStyles // Current styles
+	spacer       Panel          // spacer panel
+	horiz        bool           // horizontal or vertical splitter
+	pos          float32        // relative position (0 to 1) of the center of the spacer panel (split type == Relative) or absolute position in pixels from left (split type == Absolute) or from right plus spacer width (split type == ReverseAbsolute)
+	min0         int            // minimal number of pixels of the top/left
+	max0         int            // maximal number of pixels of the top/left
+	min1         int            // minimal number of pixels of the bottom/right
+	max1         int            // maximal number of pixels of the bottom/right
+	posLast      float32        // last position in pixels of the mouse cursor when dragging
+	leftPressed  bool           // left mouse button is pressed and dragging
+	rightPressed bool           // right mouse button is pressed and dragging
+	mouseOver    bool           // mouse is over the spacer panel
 }
 
 // SplitterStyle contains the styling of a Splitter
@@ -248,8 +248,8 @@ func (s *Splitter) onMouse(evname string, ev interface{}) {
 		} else if mev.Button == window.MouseButtonRight {
 			s.rightPressed = true
 			s.SetSplit(float32(s.min0))
-			if (s.horiz && (mev.Xpos < s.spacer.pospix.X || mev.Xpos - s.spacer.pospix.X > s.spacer.width)) ||
-				(!s.horiz && (mev.Ypos < s.spacer.pospix.Y || mev.Ypos - s.spacer.pospix.Y > s.spacer.height)) {
+			if (s.horiz && (mev.Xpos < s.spacer.pospix.X || mev.Xpos-s.spacer.pospix.X > s.spacer.width)) ||
+				(!s.horiz && (mev.Ypos < s.spacer.pospix.Y || mev.Ypos-s.spacer.pospix.Y > s.spacer.height)) {
 				s.root.SetCursorNormal()
 			}
 		}
@@ -260,8 +260,8 @@ func (s *Splitter) onMouse(evname string, ev interface{}) {
 		} else if mev.Button == window.MouseButtonRight {
 			s.rightPressed = false
 		}
-		if (s.horiz && (mev.Xpos < s.spacer.pospix.X || mev.Xpos - s.spacer.pospix.X > s.spacer.width)) ||
-			(!s.horiz && (mev.Ypos < s.spacer.pospix.Y || mev.Ypos - s.spacer.pospix.Y > s.spacer.height)) {
+		if (s.horiz && (mev.Xpos < s.spacer.pospix.X || mev.Xpos-s.spacer.pospix.X > s.spacer.width)) ||
+			(!s.horiz && (mev.Ypos < s.spacer.pospix.Y || mev.Ypos-s.spacer.pospix.Y > s.spacer.height)) {
 			s.root.SetCursorNormal()
 		}
 	default:

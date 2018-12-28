@@ -16,6 +16,7 @@ type Style struct {
 	FontIcon      *text.Font
 	Label         LabelStyle
 	Button        ButtonStyles
+	ToggleButton  ButtonStyles
 	CheckRadio    CheckRadioStyles
 	Edit          EditStyles
 	ScrollBar     ScrollBarStyles

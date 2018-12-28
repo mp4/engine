@@ -52,7 +52,7 @@ func NewDarkStyle() *Style {
 	transparent := math32.Color4{0, 0, 0, 0}
 
 	//bgColorBlue := math32.Color4{59.0/256.0, 71.0/256.0, 84.0/256.0, 1}
-	//bgColorBlue2 := math32.Color4{59.0/256.0, 71.0/256.0, 120.0/256.0, 1}
+	bgColorBlue2 := math32.Color4{59.0 / 256.0, 71.0 / 256.0, 120.0 / 256.0, 1}
 	//bgColorBlueDark := math32.Color4{49.0/256.0, 59.0/256.0, 69.0/256.0, 1}
 	//bgColorGrey := math32.Color4{85.0/256.0, 85.0/256.0, 85.0/256.0, 1}
 
@@ -85,6 +85,23 @@ func NewDarkStyle() *Style {
 	s.Button.Disabled = s.Button.Normal
 	s.Button.Disabled.BorderColor = s.Color.TextDis
 	s.Button.Disabled.FgColor = s.Color.TextDis
+
+	// ToggleButton styles
+	s.ToggleButton = ButtonStyles{}
+	s.ToggleButton.Normal = ButtonStyle{}
+	s.ToggleButton.Normal.Border = oneBounds
+	s.ToggleButton.Normal.Padding = RectBounds{2, 4, 2, 4}
+	s.ToggleButton.Normal.BorderColor = s.Color.BgDark
+	s.ToggleButton.Normal.BgColor = s.Color.BgMed
+	s.ToggleButton.Normal.FgColor = s.Color.Text
+	s.ToggleButton.Over = s.ToggleButton.Normal
+	s.ToggleButton.Over.BgColor = s.Color.BgOver
+	s.ToggleButton.Focus = s.ToggleButton.Over
+	s.ToggleButton.Pressed = s.ToggleButton.Over
+	s.ToggleButton.Pressed.BgColor = bgColorBlue2
+	s.ToggleButton.Disabled = s.ToggleButton.Normal
+	s.ToggleButton.Disabled.BorderColor = s.Color.TextDis
+	s.ToggleButton.Disabled.FgColor = s.Color.TextDis
 
 	// CheckRadio styles
 	s.CheckRadio = CheckRadioStyles{}

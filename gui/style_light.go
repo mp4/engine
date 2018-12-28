@@ -80,6 +80,23 @@ func NewLightStyle() *Style {
 	s.Button.Disabled.BorderColor = borderColorDis
 	s.Button.Disabled.FgColor = fgColorDis
 
+	// ToggleButton styles
+	s.ToggleButton = ButtonStyles{}
+	s.ToggleButton.Normal = ButtonStyle{}
+	s.ToggleButton.Normal.Border = oneBounds
+	s.ToggleButton.Normal.Padding = RectBounds{2, 4, 2, 4}
+	s.ToggleButton.Normal.BorderColor = borderColor
+	s.ToggleButton.Normal.BgColor = bgColor
+	s.ToggleButton.Normal.FgColor = fgColor
+	s.ToggleButton.Over = s.ToggleButton.Normal
+	s.ToggleButton.Over.BgColor = bgColorOver
+	s.ToggleButton.Focus = s.ToggleButton.Over
+	s.ToggleButton.Pressed = s.ToggleButton.Over
+	s.ToggleButton.Pressed.BgColor = math32.Color4Name("Gray")
+	s.ToggleButton.Disabled = s.ToggleButton.Normal
+	s.ToggleButton.Disabled.BorderColor = borderColorDis
+	s.ToggleButton.Disabled.FgColor = fgColorDis
+
 	// CheckRadio styles
 	s.CheckRadio = CheckRadioStyles{}
 	s.CheckRadio.Normal = CheckRadioStyle{}
