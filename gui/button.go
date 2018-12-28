@@ -144,8 +144,10 @@ func (tg *ToggleGroup) Contains(button *Button) bool {
 func (tg *ToggleGroup) unpressOthers(button *Button) {
 	for _, b := range tg.members {
 		if b != button {
-			b.pressed = false
-			b.update()
+			if b.pressed {
+				b.pressed = false
+				b.update()
+			}
 		}
 	}
 }
