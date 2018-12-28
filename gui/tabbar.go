@@ -106,6 +106,11 @@ func NewTabBar(width, height float32) *TabBar {
 	return tb
 }
 
+// Styles returns the styles of this TabBar
+func (tb *TabBar) Styles() *TabBarStyles {
+	return tb.styles
+}
+
 // LabelAlign returns the align of all its tab labels
 func (tb *TabBar) LabelAlign() Align {
 	return tb.labelAlign

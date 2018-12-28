@@ -112,6 +112,11 @@ func newSplitter(horiz bool, width, height float32) *Splitter {
 	return s
 }
 
+// Styles returns the styles of this Splitter
+func (s *Splitter) Styles() *SplitterStyles {
+	return s.styles
+}
+
 // SetSplitType sets the type of the split, which
 // has an impact of how the split position is interpreted
 func (s *Splitter) SetSplitType(splitType SplitType) {
