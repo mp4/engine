@@ -6,6 +6,7 @@ package gui
 
 import (
 	"fmt"
+	"github.com/sansebasko/engine/math32"
 	"github.com/sansebasko/engine/window"
 )
 
@@ -46,15 +47,20 @@ type TabStyle BasicStyle
 
 // TabStyles describes all Tab styles
 type TabStyles struct {
-	IconPaddings     RectBounds // Paddings for optional icon
-	ImagePaddings    RectBounds // Paddings for optional image
-	IconClose        string     // Codepoint for close icon in Tab header
-	Normal           TabStyle   // Style for normal exhibition
-	Over             TabStyle   // Style when cursor is over the Tab
-	Focus            TabStyle   // Style when the Tab has key focus
-	Disabled         TabStyle   // Style when the Tab is disabled
-	Selected         TabStyle   // Style when the Tab is selected
-	SelectionAdvance float32    // Selected tab advance
+	IconPaddings     RectBounds   // Paddings for optional icon
+	ImagePaddings    RectBounds   // Paddings for optional image
+	IconClose        string       // Codepoint for close icon in Tab header
+	Normal           TabStyle     // Style for normal exhibition
+	Over             TabStyle     // Style when cursor is over the Tab
+	Focus            TabStyle     // Style when the Tab has key focus
+	Disabled         TabStyle     // Style when the Tab is disabled
+	Selected         TabStyle     // Style when the Tab is selected
+	SelectionAdvance AdvanceStyle // Style of advance when the tab is selected
+}
+
+type AdvanceStyle struct {
+	Thickness float32
+	Color     math32.Color4
 }
 
 // NewTabBar creates and returns a pointer to a new TabBar widget
@@ -465,7 +471,8 @@ type Tab struct {
 	iconClose  *Label     // Tab close icon
 	icon       *Label     // Tab optional user icon
 	image      *Image     // Tab optional user image
-	cover      Panel      // Panel to cover the bottom/top edge of the Tab
+	cover      Panel      // Panel to cover the bottom/top edge of the tab
+	advance    Panel      // Panel of the advance of the selected tab
 	content    IPanel     // User content panel
 	cursorOver bool
 	selected   bool
@@ -490,6 +497,11 @@ func newTab(text string, tb *TabBar, styles *TabStyles) *Tab {
 	tab.cover.SetBounded(false)
 	tab.cover.SetColor4(&tab.styles.Selected.BgColor)
 	tab.header.Add(&tab.cover)
+	// Creates the advance panel
+	tab.advance.Initialize(0, 0)
+	tab.advance.SetBounded(false)
+	tab.advance.SetColor4(&tab.styles.SelectionAdvance.Color)
+	tab.header.Add(&tab.advance)
 
 	// Subscribe to header panel events
 	tab.header.Subscribe(OnCursorEnter, tab.onCursor)
@@ -688,8 +700,10 @@ func (tab *Tab) setSelected(selected bool) {
 		tab.content.GetPanel().SetVisible(selected)
 	}
 	tab.cover.SetVisible(selected)
+	tab.advance.SetVisible(selected)
 	tab.update()
 	tab.setCoverPanel()
+	tab.setAdvancePanel()
 }
 
 // minWidth returns the minimum width of this Tab header to allow
@@ -716,7 +730,11 @@ func (tab *Tab) applyStyle(s *TabStyle) {
 // update updates the Tab header visual style
 func (tab *Tab) update() {
 
-	defer tab.advanceSelectedTab()
+	if tab.tb.tabHeaderAlign == AlignBottom {
+		defer func() {
+			tab.header.borderSizes.Top, tab.header.borderSizes.Bottom = tab.header.borderSizes.Bottom, tab.header.borderSizes.Top
+		}()
+	}
 
 	if !tab.header.Enabled() {
 		tab.applyStyle(&tab.styles.Disabled)
@@ -731,22 +749,6 @@ func (tab *Tab) update() {
 		return
 	}
 	tab.applyStyle(&tab.styles.Normal)
-}
-
-// advanceSelectedTab advances the selected tab from the other ones
-func (tab *Tab) advanceSelectedTab() {
-	if tab.tb.tabHeaderAlign == AlignBottom {
-		tab.header.borderSizes.Top, tab.header.borderSizes.Bottom = tab.header.borderSizes.Bottom, tab.header.borderSizes.Top
-		if tab.selected {
-			tab.header.borderSizes.Bottom += tab.styles.SelectionAdvance
-		} else {
-			tab.header.marginSizes.Bottom += tab.styles.SelectionAdvance
-		}
-	} else if tab.selected {
-		tab.header.borderSizes.Top += tab.styles.SelectionAdvance
-	} else {
-		tab.header.marginSizes.Top += tab.styles.SelectionAdvance
-	}
 }
 
 // setCoverPanel sets the position and size of the Tab cover panel
@@ -765,11 +767,36 @@ func (tab *Tab) setCoverPanel() {
 	}
 }
 
+// setAdvancePanel sets the position and size of the Tab advance panel
+// to advance the selected tab
+func (tab *Tab) setAdvancePanel() {
+
+	if tab.selected {
+		w := tab.header.ContentWidth() + tab.header.Paddings().Left + tab.header.Paddings().Right + tab.styles.Selected.Border.Left + tab.styles.Selected.Border.Right
+		tab.advance.SetSize(w, tab.styles.SelectionAdvance.Thickness)
+		x := tab.styles.Selected.Margin.Left
+		y := tab.header.Height() - tab.styles.SelectionAdvance.Thickness - tab.header.borderSizes.Bottom
+		if tab.tb.tabHeaderAlign == AlignTop {
+			y = tab.styles.Selected.Margin.Top
+		}
+		tab.advance.SetPosition(x, y)
+	} else {
+		if tab.tb.tabHeaderAlign == AlignBottom {
+			tab.header.marginSizes.Bottom = tab.styles.SelectionAdvance.Thickness
+		} else {
+			tab.header.marginSizes.Top = tab.styles.SelectionAdvance.Thickness
+		}
+	}
+}
+
 // recalc recalculates the size of the Tab header and the size
 // and positions of the Tab header internal panels
 func (tab *Tab) recalc(width float32) {
 
 	height := tab.label.Height()
+	if tab.selected {
+		height += tab.styles.SelectionAdvance.Thickness
+	}
 	tab.header.SetContentHeight(height)
 
 	labx := float32(0)
@@ -803,13 +830,25 @@ func (tab *Tab) recalc(width float32) {
 			labx -= icw
 		}
 	}
-	tab.label.SetPosition(labx, 0)
+	laby := float32(0)
+	if tab.selected && tab.tb.tabHeaderAlign == AlignTop {
+		laby = tab.styles.SelectionAdvance.Thickness
+	}
+	tab.label.SetPosition(labx, laby)
 
 	// Sets the close icon position
 	icx := thw - tab.iconClose.Width()
 	icy := (tab.header.ContentHeight() - tab.iconClose.Height()) / 2
+	if tab.selected {
+		if tab.tb.tabHeaderAlign == AlignTop {
+			icy += tab.styles.SelectionAdvance.Thickness / 2
+		} else {
+			icy -= tab.styles.SelectionAdvance.Thickness / 2
+		}
+	}
 	tab.iconClose.SetPosition(icx, icy)
 
 	// Sets the position of the cover panel to cover separator
 	tab.setCoverPanel()
+	tab.setAdvancePanel()
 }
