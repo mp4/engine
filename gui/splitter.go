@@ -248,6 +248,10 @@ func (s *Splitter) onMouse(evname string, ev interface{}) {
 		} else if mev.Button == window.MouseButtonRight {
 			s.rightPressed = true
 			s.SetSplit(float32(s.min0))
+			if (s.horiz && (mev.Xpos < s.spacer.pospix.X || mev.Xpos - s.spacer.pospix.X > s.spacer.width)) ||
+				(!s.horiz && (mev.Ypos < s.spacer.pospix.Y || mev.Ypos - s.spacer.pospix.Y > s.spacer.height)) {
+				s.root.SetCursorNormal()
+			}
 		}
 	case OnMouseUp:
 		if mev.Button == window.MouseButtonLeft {
@@ -479,4 +483,5 @@ func (s *Splitter) recalc() {
 		s.P1.SetPosition(0, spy+s.spacer.Height())
 		s.P1.SetSize(width, height-spy-s.spacer.Height())
 	}
+	s.spacer.UpdateMatrixWorld()
 }
