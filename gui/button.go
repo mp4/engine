@@ -49,7 +49,7 @@ type ButtonStyles struct {
 	Normal   ButtonStyle
 	Over     ButtonStyle
 	Focus    ButtonStyle
-	Selected ButtonStyle
+	Pressed  ButtonStyle
 	Disabled ButtonStyle
 }
 
@@ -304,7 +304,7 @@ func (b *Button) update() {
 		return
 	}
 	if b.selected {
-		b.applyStyle(&b.styles.Selected)
+		b.applyStyle(&b.styles.Pressed)
 		return
 	}
 	if b.mouseOver {
