@@ -38,7 +38,7 @@ type Button struct {
 // that at most one of them is pressed at a time
 type ToggleGroup struct {
 	members           []*Button // Slice of pointers to the toggle button members
-	UnpressingAllowed bool      // Whether unpressing is allowed for its members
+	UnpressingAllowed bool      // Whether depressing is allowed for its members
 }
 
 // ButtonStyle contains the styling of a Button
@@ -97,9 +97,9 @@ func NewToggleButton(text string) *Button {
 }
 
 // NewToggleGroup creates and returns a pointer to a new toggle group.
-func NewToggleGroup(allowUnpressing bool) *ToggleGroup {
+func NewToggleGroup(allowDepressing bool) *ToggleGroup {
 	tg := new(ToggleGroup)
-	tg.UnpressingAllowed = allowUnpressing
+	tg.UnpressingAllowed = allowDepressing
 	return tg
 }
 
@@ -144,9 +144,9 @@ func (tg *ToggleGroup) Contains(button *Button) bool {
 	return false
 }
 
-// unpressOthers unpresses all buttons contained in this toggle group except the
+// depressOthers depresses all buttons contained in this toggle group except the
 // given one.
-func (tg *ToggleGroup) unpressOthers(button *Button) {
+func (tg *ToggleGroup) depressOthers(button *Button) {
 	for _, b := range tg.members {
 		if b != button {
 			if b.pressed {
@@ -157,9 +157,9 @@ func (tg *ToggleGroup) unpressOthers(button *Button) {
 	}
 }
 
-// unpressingAllowed returns true if none of all toggle groups this button is a member of
-// disallows unpressing. Otherwise false is returned.
-func (b *Button) unpressingAllowed() bool {
+// depressingAllowed returns true if none of all toggle groups this button is a member of
+// disallows depressing. Otherwise false is returned.
+func (b *Button) depressingAllowed() bool {
 	for _, g := range b.groups {
 		if !g.UnpressingAllowed {
 			return false
@@ -177,7 +177,7 @@ func (b *Button) IsPressed() bool {
 func (b *Button) Press() {
 	b.pressed = true
 	for _, g := range b.groups {
-		g.unpressOthers(b)
+		g.depressOthers(b)
 	}
 	b.update()
 	b.Dispatch(OnClick, nil)
@@ -254,7 +254,7 @@ func (b *Button) onMouse(evname string, ev interface{}) {
 			b.Press()
 		} else if !b.pressed {
 			b.Press()
-		} else if b.unpressingAllowed() {
+		} else if b.depressingAllowed() {
 			b.pressed = false
 			b.update()
 		}
@@ -278,7 +278,7 @@ func (b *Button) onKey(evname string, ev interface{}) {
 			b.Press()
 		} else if !b.pressed {
 			b.Press()
-		} else if b.unpressingAllowed() {
+		} else if b.depressingAllowed() {
 			b.pressed = false
 			b.update()
 		}
