@@ -716,23 +716,21 @@ func (tab *Tab) applyStyle(s *TabStyle) {
 // update updates the Tab header visual style
 func (tab *Tab) update() {
 
+	defer tab.advanceSelectedTab()
+
 	if !tab.header.Enabled() {
 		tab.applyStyle(&tab.styles.Disabled)
-		tab.advanceSelectedTab()
 		return
 	}
 	if tab.selected {
 		tab.applyStyle(&tab.styles.Selected)
-		tab.advanceSelectedTab()
 		return
 	}
 	if tab.cursorOver {
 		tab.applyStyle(&tab.styles.Over)
-		tab.advanceSelectedTab()
 		return
 	}
 	tab.applyStyle(&tab.styles.Normal)
-	tab.advanceSelectedTab()
 }
 
 // advanceSelectedTab advances the selected tab from the other ones
@@ -751,19 +749,19 @@ func (tab *Tab) advanceSelectedTab() {
 	}
 }
 
-// setBottomPanel sets the position and size of the Tab cover panel
+// setCoverPanel sets the position and size of the Tab cover panel
 // to cover the Tabs separator
 func (tab *Tab) setCoverPanel() {
 
 	if tab.selected {
-		bwidth := tab.header.ContentWidth() + tab.header.Paddings().Left + tab.header.Paddings().Right
-		tab.cover.SetSize(bwidth, tab.tb.styles.SepHeight)
-		bx := tab.styles.Selected.Margin.Left + tab.styles.Selected.Border.Left
-		by := tab.header.Height()
+		w := tab.header.ContentWidth() + tab.header.Paddings().Left + tab.header.Paddings().Right
+		tab.cover.SetSize(w, tab.tb.styles.SepHeight)
+		x := tab.styles.Selected.Margin.Left + tab.styles.Selected.Border.Left
+		y := tab.header.Height()
 		if tab.tb.tabHeaderAlign == AlignBottom {
-			by = -1
+			y = -tab.tb.styles.SepHeight
 		}
-		tab.cover.SetPosition(bx, by)
+		tab.cover.SetPosition(x, y)
 	}
 }
 
