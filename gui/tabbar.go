@@ -771,20 +771,21 @@ func (tab *Tab) setCoverPanel() {
 // to advance the selected tab
 func (tab *Tab) setAdvancePanel() {
 
+	advance := tab.styles.SelectionAdvance.Thickness
 	if tab.selected {
-		w := tab.header.ContentWidth() + tab.header.Paddings().Left + tab.header.Paddings().Right + tab.styles.Selected.Border.Left + tab.styles.Selected.Border.Right
-		tab.advance.SetSize(w, tab.styles.SelectionAdvance.Thickness)
-		x := tab.styles.Selected.Margin.Left
-		y := tab.header.Height() - tab.styles.SelectionAdvance.Thickness - tab.header.borderSizes.Bottom
+		w := tab.header.ContentWidth() + tab.header.Paddings().Left + tab.header.Paddings().Right
+		tab.advance.SetSize(w, advance)
+		x := tab.header.Margins().Left + tab.header.Borders().Left
+		y := tab.header.Height() - advance - tab.header.Borders().Bottom
 		if tab.tb.tabHeaderAlign == AlignTop {
-			y = tab.styles.Selected.Margin.Top
+			y = tab.header.Margins().Top + tab.header.Borders().Top
 		}
 		tab.advance.SetPosition(x, y)
 	} else {
 		if tab.tb.tabHeaderAlign == AlignBottom {
-			tab.header.marginSizes.Bottom = tab.styles.SelectionAdvance.Thickness
+			tab.header.marginSizes.Bottom = advance
 		} else {
-			tab.header.marginSizes.Top = tab.styles.SelectionAdvance.Thickness
+			tab.header.marginSizes.Top = advance
 		}
 	}
 }
@@ -793,9 +794,10 @@ func (tab *Tab) setAdvancePanel() {
 // and positions of the Tab header internal panels
 func (tab *Tab) recalc(width float32) {
 
+	advance := tab.styles.SelectionAdvance.Thickness
 	height := tab.label.Height()
 	if tab.selected {
-		height += tab.styles.SelectionAdvance.Thickness
+		height += advance
 	}
 	tab.header.SetContentHeight(height)
 
@@ -832,7 +834,7 @@ func (tab *Tab) recalc(width float32) {
 	}
 	laby := float32(0)
 	if tab.selected && tab.tb.tabHeaderAlign == AlignTop {
-		laby = tab.styles.SelectionAdvance.Thickness
+		laby = advance
 	}
 	tab.label.SetPosition(labx, laby)
 
@@ -841,9 +843,9 @@ func (tab *Tab) recalc(width float32) {
 	icy := (tab.header.ContentHeight() - tab.iconClose.Height()) / 2
 	if tab.selected {
 		if tab.tb.tabHeaderAlign == AlignTop {
-			icy += tab.styles.SelectionAdvance.Thickness / 2
+			icy += advance / 2
 		} else {
-			icy -= tab.styles.SelectionAdvance.Thickness / 2
+			icy -= advance / 2
 		}
 	}
 	tab.iconClose.SetPosition(icx, icy)
