@@ -12,21 +12,21 @@ import (
 
 // Splitter is a GUI element that splits two panels and can be adjusted
 type Splitter struct {
-	Panel                     // Embedded panel
-	P0        Panel           // Left/Top panel
-	P1        Panel           // Right/Bottom panel
-	splitType SplitType       // relative (0-1), absolute (in pixels) or reverse absolute (in pixels)
-	styles    *SplitterStyles // pointer to current styles
-	spacer    Panel           // spacer panel
-	horiz     bool            // horizontal or vertical splitter
-	pos       float32         // relative position (0 to 1) of the center of the spacer panel (split type == Relative) or absolute position in pixels from left (split type == Absolute) or from right plus spacer width (split type == ReverseAbsolute)
-	min0      int             // minimal number of pixels of the top/left
-	max0      int             // maximal number of pixels of the top/left
-	min1      int             // minimal number of pixels of the bottom/right
-	max1      int             // maximal number of pixels of the bottom/right
-	posLast   float32         // last position in pixels of the mouse cursor when dragging
-	pressed   bool            // mouse button is pressed and dragging
-	mouseOver bool            // mouse is over the spacer panel
+	Panel                    // Embedded panel
+	P0        Panel          // Left/Top panel
+	P1        Panel          // Right/Bottom panel
+	splitType SplitType      // relative (0-1), absolute (in pixels) or reverse absolute (in pixels)
+	styles    SplitterStyles // Current styles
+	spacer    Panel          // spacer panel
+	horiz     bool           // horizontal or vertical splitter
+	pos       float32        // relative position (0 to 1) of the center of the spacer panel (split type == Relative) or absolute position in pixels from left (split type == Absolute) or from right plus spacer width (split type == ReverseAbsolute)
+	min0      int            // minimal number of pixels of the top/left
+	max0      int            // maximal number of pixels of the top/left
+	min1      int            // minimal number of pixels of the bottom/right
+	max1      int            // maximal number of pixels of the bottom/right
+	posLast   float32        // last position in pixels of the mouse cursor when dragging
+	pressed   bool           // mouse button is pressed and dragging
+	mouseOver bool           // mouse is over the spacer panel
 }
 
 // SplitterStyle contains the styling of a Splitter
@@ -77,7 +77,7 @@ func newSplitter(horiz bool, width, height float32) *Splitter {
 	s.min1 = 0
 	s.max1 = math.MaxInt32
 	s.horiz = horiz
-	s.styles = &StyleDefault().Splitter
+	s.styles = StyleDefault().Splitter
 	s.Panel.Initialize(width, height)
 
 	// Initialize left/top panel
@@ -114,7 +114,7 @@ func newSplitter(horiz bool, width, height float32) *Splitter {
 
 // Styles returns the styles of this Splitter
 func (s *Splitter) Styles() *SplitterStyles {
-	return s.styles
+	return &s.styles
 }
 
 // SetSplitType sets the type of the split, which

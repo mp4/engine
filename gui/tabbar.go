@@ -14,17 +14,17 @@ import (
 // Only one panel is visible at a time.
 // To show another panel the corresponding Tab must be selected.
 type TabBar struct {
-	Panel                                  // Embedded panel
-	styles                   *TabBarStyles // Pointer to current styles
-	tabs                     []*Tab        // Array of tabs
-	separator                Panel         // Separator Panel
-	listButton               *Label        // Icon for tab list button
-	list                     *List         // List for not visible tabs
-	selected                 int           // Index of the selected tab
-	cursorOver               bool          // Cursor over TabBar panel flag
-	labelAlign               Align         // Label align of all tabs (one of AlignCenter, AlignLeft, AlignRight)
-	tabHeaderAlign           Align         // Tab header align (one of AlignTop, AlignBottom)
-	consistentTabHeaderWidth bool          // Consistent tab header width (true) or only as width as needed (false)
+	Panel                                 // Embedded panel
+	styles                   TabBarStyles // Current styles
+	tabs                     []*Tab       // Array of tabs
+	separator                Panel        // Separator Panel
+	listButton               *Label       // Icon for tab list button
+	list                     *List        // List for not visible tabs
+	selected                 int          // Index of the selected tab
+	cursorOver               bool         // Cursor over TabBar panel flag
+	labelAlign               Align        // Label align of all tabs (one of AlignCenter, AlignLeft, AlignRight)
+	tabHeaderAlign           Align        // Tab header align (one of AlignTop, AlignBottom)
+	consistentTabHeaderWidth bool         // Consistent tab header width (true) or only as width as needed (false)
 }
 
 // TabBarStyle describes the style of the TabBar
@@ -73,7 +73,7 @@ func NewTabBar(width, height float32) *TabBar {
 	tb.tabHeaderAlign = AlignTop
 	tb.consistentTabHeaderWidth = true
 	tb.Initialize(width, height)
-	tb.styles = &StyleDefault().TabBar
+	tb.styles = StyleDefault().TabBar
 	tb.tabs = make([]*Tab, 0)
 	tb.selected = -1
 
@@ -108,7 +108,7 @@ func NewTabBar(width, height float32) *TabBar {
 
 // Styles returns the styles of this TabBar
 func (tb *TabBar) Styles() *TabBarStyles {
-	return tb.styles
+	return &tb.styles
 }
 
 // LabelAlign returns the align of all its tab labels
