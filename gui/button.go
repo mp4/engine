@@ -29,16 +29,16 @@ type Button struct {
 	icon      *Label         // pointer to button icon (may be nil
 	styles    *ButtonStyles  // pointer to current button styles
 	mouseOver bool           // true if mouse is over button
-	pressed   bool           // true if button is pressed
+	selected  bool           // true if button is selected
 	toggle    bool           // true if button is a toggle button
 	groups    []*ToggleGroup // Slice of pointers to all toggle groups the button is a member of
 }
 
 // ToggleGroup holds only toggle buttons and ensures
-// that at most one of them is pressed at a time
+// that at most one of them is selected at a time
 type ToggleGroup struct {
-	members           []*Button // Slice of pointers to the toggle button members
-	DepressingAllowed bool      // Whether depressing is allowed for its members
+	members            []*Button // Slice of pointers to the toggle button members
+	DeselectingAllowed bool      // Whether deselecting is allowed for its members
 }
 
 // ButtonStyle contains the styling of a Button
@@ -49,7 +49,7 @@ type ButtonStyles struct {
 	Normal   ButtonStyle
 	Over     ButtonStyle
 	Focus    ButtonStyle
-	Pressed  ButtonStyle
+	Selected ButtonStyle
 	Disabled ButtonStyle
 }
 
@@ -97,9 +97,9 @@ func NewToggleButton(text string) *Button {
 }
 
 // NewToggleGroup creates and returns a pointer to a new toggle group.
-func NewToggleGroup(allowDepressing bool) *ToggleGroup {
+func NewToggleGroup(allowDeselecting bool) *ToggleGroup {
 	tg := new(ToggleGroup)
-	tg.DepressingAllowed = allowDepressing
+	tg.DeselectingAllowed = allowDeselecting
 	return tg
 }
 
@@ -144,40 +144,40 @@ func (tg *ToggleGroup) Contains(button *Button) bool {
 	return false
 }
 
-// depressOthers depresses all buttons contained in this toggle group except the
+// deselectOthers deselects all buttons contained in this toggle group except the
 // given one.
-func (tg *ToggleGroup) depressOthers(button *Button) {
+func (tg *ToggleGroup) deselectOthers(button *Button) {
 	for _, b := range tg.members {
 		if b != button {
-			if b.pressed {
-				b.pressed = false
+			if b.selected {
+				b.selected = false
 				b.update()
 			}
 		}
 	}
 }
 
-// depressingAllowed returns true if none of all toggle groups this button is a member of
-// disallows depressing. Otherwise false is returned.
-func (b *Button) depressingAllowed() bool {
+// deselectingAllowed returns true if none of all toggle groups this button is a member of
+// disallows deselecting. Otherwise false is returned.
+func (b *Button) deselectingAllowed() bool {
 	for _, g := range b.groups {
-		if !g.DepressingAllowed {
+		if !g.DeselectingAllowed {
 			return false
 		}
 	}
 	return true
 }
 
-// IsPressed returns true if the button is pressed, otherwise false.
-func (b *Button) IsPressed() bool {
-	return b.pressed
+// IsSelected returns true if the button is selected, otherwise false.
+func (b *Button) IsSelected() bool {
+	return b.selected
 }
 
 // Press presses the button as if it were initiated by a mouse click.
 func (b *Button) Press() {
-	b.pressed = true
+	b.selected = true
 	for _, g := range b.groups {
-		g.depressOthers(b)
+		g.deselectOthers(b)
 	}
 	b.update()
 	b.Dispatch(OnClick, nil)
@@ -236,7 +236,7 @@ func (b *Button) onCursor(evname string, ev interface{}) {
 		b.update()
 	case OnCursorLeave:
 		if !b.toggle {
-			b.pressed = false
+			b.selected = false
 		}
 		b.mouseOver = false
 		b.update()
@@ -252,15 +252,15 @@ func (b *Button) onMouse(evname string, ev interface{}) {
 		b.root.SetKeyFocus(b)
 		if !b.toggle {
 			b.Press()
-		} else if !b.pressed {
+		} else if !b.selected {
 			b.Press()
-		} else if b.depressingAllowed() {
-			b.pressed = false
+		} else if b.deselectingAllowed() {
+			b.selected = false
 			b.update()
 		}
 	case OnMouseUp:
 		if !b.toggle {
-			b.pressed = false
+			b.selected = false
 		}
 		b.update()
 	default:
@@ -276,10 +276,10 @@ func (b *Button) onKey(evname string, ev interface{}) {
 	if evname == OnKeyDown && kev.Keycode == window.KeyEnter {
 		if !b.toggle {
 			b.Press()
-		} else if !b.pressed {
+		} else if !b.selected {
 			b.Press()
-		} else if b.depressingAllowed() {
-			b.pressed = false
+		} else if b.deselectingAllowed() {
+			b.selected = false
 			b.update()
 		}
 		b.root.StopPropagation(Stop3D)
@@ -287,7 +287,7 @@ func (b *Button) onKey(evname string, ev interface{}) {
 	}
 	if evname == OnKeyUp && kev.Keycode == window.KeyEnter {
 		if !b.toggle {
-			b.pressed = false
+			b.selected = false
 		}
 		b.update()
 		b.root.StopPropagation(Stop3D)
@@ -303,8 +303,8 @@ func (b *Button) update() {
 		b.applyStyle(&b.styles.Disabled)
 		return
 	}
-	if b.pressed {
-		b.applyStyle(&b.styles.Pressed)
+	if b.selected {
+		b.applyStyle(&b.styles.Selected)
 		return
 	}
 	if b.mouseOver {
