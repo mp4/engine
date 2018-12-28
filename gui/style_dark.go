@@ -397,6 +397,7 @@ func NewDarkStyle() *Style {
 	s.TabBar.Tab.Disabled = s.TabBar.Tab.Focus
 	s.TabBar.Tab.Selected = s.TabBar.Tab.Normal
 	s.TabBar.Tab.Selected.BgColor = s.Color.BgOver
+	s.TabBar.Tab.SelectionAdvance = float32(3)
 
 	return s
 }

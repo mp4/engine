@@ -20,7 +20,6 @@ type TabBar struct {
 	listButton               *Label        // Icon for tab list button
 	list                     *List         // List for not visible tabs
 	selected                 int           // Index of the selected tab
-	selectedTabAdvance       float32       // Advance of the selected tab
 	cursorOver               bool          // Cursor over TabBar panel flag
 	labelAlign               Align         // Label align of all tabs (one of AlignCenter, AlignLeft, AlignRight)
 	tabHeaderAlign           Align         // Tab header align (one of AlignTop, AlignBottom)
@@ -47,14 +46,15 @@ type TabStyle BasicStyle
 
 // TabStyles describes all Tab styles
 type TabStyles struct {
-	IconPaddings  RectBounds // Paddings for optional icon
-	ImagePaddings RectBounds // Paddings for optional image
-	IconClose     string     // Codepoint for close icon in Tab header
-	Normal        TabStyle   // Style for normal exhibition
-	Over          TabStyle   // Style when cursor is over the Tab
-	Focus         TabStyle   // Style when the Tab has key focus
-	Disabled      TabStyle   // Style when the Tab is disabled
-	Selected      TabStyle   // Style when the Tab is selected
+	IconPaddings     RectBounds // Paddings for optional icon
+	ImagePaddings    RectBounds // Paddings for optional image
+	IconClose        string     // Codepoint for close icon in Tab header
+	Normal           TabStyle   // Style for normal exhibition
+	Over             TabStyle   // Style when cursor is over the Tab
+	Focus            TabStyle   // Style when the Tab has key focus
+	Disabled         TabStyle   // Style when the Tab is disabled
+	Selected         TabStyle   // Style when the Tab is selected
+	SelectionAdvance float32    // Selected tab advance
 }
 
 // NewTabBar creates and returns a pointer to a new TabBar widget
@@ -70,7 +70,6 @@ func NewTabBar(width, height float32) *TabBar {
 	tb.styles = &StyleDefault().TabBar
 	tb.tabs = make([]*Tab, 0)
 	tb.selected = -1
-	tb.selectedTabAdvance = float32(3)
 
 	// Creates separator panel (between the tab headers and content panel)
 	tb.separator.Initialize(0, 0)
@@ -131,22 +130,6 @@ func (tb *TabBar) SetTabHeaderAlign(align Align) bool {
 		return true
 	}
 	return false
-}
-
-// SelectedTabAdvance returns the advance of the selected tab
-func (tb *TabBar) SelectedTabAdvance() float32 {
-	return tb.selectedTabAdvance
-}
-
-// SetSelectedTabAdvance sets the advance of the selected tab if the given
-// advance is positive, in which case true is returned.
-// Otherwise nothing happens and false is returned.
-func (tb *TabBar) SetSelectedTabAdvance(advance float32) bool {
-	if advance <= 0 {
-		return false
-	}
-	tb.selectedTabAdvance = advance
-	return true
 }
 
 // ConsistentTabHeaderWidth returns true if all its tab headers share a consistent width.
@@ -757,14 +740,14 @@ func (tab *Tab) advanceSelectedTab() {
 	if tab.tb.tabHeaderAlign == AlignBottom {
 		tab.header.borderSizes.Top, tab.header.borderSizes.Bottom = tab.header.borderSizes.Bottom, tab.header.borderSizes.Top
 		if tab.selected {
-			tab.header.borderSizes.Bottom += tab.tb.selectedTabAdvance
+			tab.header.borderSizes.Bottom += tab.styles.SelectionAdvance
 		} else {
-			tab.header.marginSizes.Bottom += tab.tb.selectedTabAdvance
+			tab.header.marginSizes.Bottom += tab.styles.SelectionAdvance
 		}
 	} else if tab.selected {
-		tab.header.borderSizes.Top += tab.tb.selectedTabAdvance
+		tab.header.borderSizes.Top += tab.styles.SelectionAdvance
 	} else {
-		tab.header.marginSizes.Top += tab.tb.selectedTabAdvance
+		tab.header.marginSizes.Top += tab.styles.SelectionAdvance
 	}
 }
 

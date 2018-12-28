@@ -393,6 +393,7 @@ func NewLightStyle() *Style {
 	s.TabBar.Tab.Disabled = s.TabBar.Tab.Focus
 	s.TabBar.Tab.Selected = s.TabBar.Tab.Normal
 	s.TabBar.Tab.Selected.BgColor = math32.Color4{0.85, 0.85, 0.85, 1}
+	s.TabBar.Tab.SelectionAdvance = float32(3)
 
 	return s
 }
