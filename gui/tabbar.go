@@ -20,6 +20,7 @@ type TabBar struct {
 	listButton               *Label        // Icon for tab list button
 	list                     *List         // List for not visible tabs
 	selected                 int           // Index of the selected tab
+	selectedTabAdvance       float32       // Advance of the selected tab
 	cursorOver               bool          // Cursor over TabBar panel flag
 	labelAlign               Align         // Label align of all tabs (one of AlignCenter, AlignLeft, AlignRight)
 	tabHeaderAlign           Align         // Tab header align (one of AlignTop, AlignBottom)
@@ -69,6 +70,7 @@ func NewTabBar(width, height float32) *TabBar {
 	tb.styles = &StyleDefault().TabBar
 	tb.tabs = make([]*Tab, 0)
 	tb.selected = -1
+	tb.selectedTabAdvance = float32(3)
 
 	// Creates separator panel (between the tab headers and content panel)
 	tb.separator.Initialize(0, 0)
@@ -129,6 +131,22 @@ func (tb *TabBar) SetTabHeaderAlign(align Align) bool {
 		return true
 	}
 	return false
+}
+
+// SelectedTabAdvance returns the advance of the selected tab
+func (tb *TabBar) SelectedTabAdvance() float32 {
+	return tb.selectedTabAdvance
+}
+
+// SetSelectedTabAdvance sets the advance of the selected tab if the given
+// advance is positive, in which case true is returned.
+// Otherwise nothing happens and false is returned.
+func (tb *TabBar) SetSelectedTabAdvance(advance float32) bool {
+	if advance <= 0 {
+		return false
+	}
+	tb.selectedTabAdvance = advance
+	return true
 }
 
 // ConsistentTabHeaderWidth returns true if all its tab headers share a consistent width.
@@ -736,18 +754,17 @@ func (tab *Tab) update() {
 
 // advanceSelectedTab advances the selected tab from the other ones
 func (tab *Tab) advanceSelectedTab() {
-	selectionAdvance := float32(3)
 	if tab.tb.tabHeaderAlign == AlignBottom {
 		tab.header.borderSizes.Top, tab.header.borderSizes.Bottom = tab.header.borderSizes.Bottom, tab.header.borderSizes.Top
 		if tab.selected {
-			tab.header.borderSizes.Bottom += selectionAdvance
+			tab.header.borderSizes.Bottom += tab.tb.selectedTabAdvance
 		} else {
-			tab.header.marginSizes.Bottom += selectionAdvance
+			tab.header.marginSizes.Bottom += tab.tb.selectedTabAdvance
 		}
 	} else if tab.selected {
-		tab.header.borderSizes.Top += selectionAdvance
+		tab.header.borderSizes.Top += tab.tb.selectedTabAdvance
 	} else {
-		tab.header.marginSizes.Top += selectionAdvance
+		tab.header.marginSizes.Top += tab.tb.selectedTabAdvance
 	}
 }
 
