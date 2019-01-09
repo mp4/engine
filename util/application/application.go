@@ -38,6 +38,7 @@ type Application struct {
 	orbit             *control.OrbitControl // Camera orbit controller
 	frameRater        *FrameRater           // Render loop frame rater
 	keyState          *KeyState             // State of keys
+	mouseState        *MouseState           // State of pressed mouse buttons
 	audioDev          *al.Device            // Default audio device
 	scene             *core.Node            // Node container for 3D tests
 	guiroot           *gui.Root             // Gui root panel
@@ -173,6 +174,9 @@ func Create(ops Options) (*Application, error) {
 	// Creates KeyState
 	app.keyState = NewKeyState(win)
 
+	// Creates MouseState
+	app.mouseState = NewMouseState(win)
+
 	// Creates perspective camera
 	width, height := app.win.Size()
 	aspect := float32(width) / float32(height)
@@ -243,6 +247,12 @@ func (app *Application) Window() window.IWindow {
 func (app *Application) KeyState() *KeyState {
 
 	return app.keyState
+}
+
+// MouseState returns the application MouseState
+func (app *Application) MouseState() *MouseState {
+
+	return app.mouseState
 }
 
 // Gl returns the OpenGL state
