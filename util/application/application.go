@@ -37,7 +37,7 @@ type Application struct {
 	camera            camera.ICamera        // Current camera
 	orbit             *control.OrbitControl // Camera orbit controller
 	frameRater        *FrameRater           // Render loop frame rater
-	keyState          *KeyState             // State of keys
+	keyState          *KeyState             // State of pressed keys
 	mouseState        *MouseState           // State of pressed mouse buttons
 	audioDev          *al.Device            // Default audio device
 	scene             *core.Node            // Node container for 3D tests

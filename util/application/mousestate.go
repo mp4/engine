@@ -39,6 +39,24 @@ func (ms *MouseState) Pressed(b window.MouseButton) bool {
 	return ms.states[b]
 }
 
+// Pressed returns whether the left mouse button is currently pressed.
+func (ms *MouseState) LeftPressed() bool {
+
+	return ms.states[window.MouseButtonLeft]
+}
+
+// Pressed returns whether the right mouse button is currently pressed.
+func (ms *MouseState) RightPressed() bool {
+
+	return ms.states[window.MouseButtonRight]
+}
+
+// Pressed returns whether the middle mouse button is currently pressed.
+func (ms *MouseState) MiddlePressed() bool {
+
+	return ms.states[window.MouseButtonMiddle]
+}
+
 // onMouse receives mouse events and updates the internal map of states.
 func (ms *MouseState) onMouse(evname string, ev interface{}) {
 
