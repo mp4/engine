@@ -5,32 +5,24 @@ import (
 	"time"
 )
 
-var DoubleClickInterval = 300 * time.Millisecond
+// Millis
+const DefaultDoubleClickDuration = 300
 
 // MouseState keeps track of the state of pressed mouse buttons.
 type MouseState struct {
 	win    window.IWindow
 	lastButton window.MouseButton
+	DoubleClickDuration time.Duration
 	states map[window.MouseButton]*mouseButtonState
 }
 
 type mouseButtonState struct {
 	clickCount int
-	timer *time.Timer
-	elapsed bool
+	lastClick time.Time
 }
 
 func (s *mouseButtonState) doubleClicked() bool {
 	return s.clickCount == 2 || s.clickCount == -2
-}
-
-func (s *mouseButtonState) startTimer() {
-	s.timer.Reset(DoubleClickInterval)
-	s.elapsed = false
-	go func() {
-		<-s.timer.C
-		s.elapsed = true
-	}()
 }
 
 // NewMouseState returns a new MouseState object.
@@ -38,15 +30,12 @@ func NewMouseState(win window.IWindow) *MouseState {
 
 	ms := new(MouseState)
 	ms.win = win
+	ms.DoubleClickDuration = DefaultDoubleClickDuration * time.Millisecond
 	ms.states = map[window.MouseButton]*mouseButtonState{
-		window.MouseButtonLeft:   {clickCount: 0, timer: time.NewTimer(0), elapsed: true},
-		window.MouseButtonRight:  {clickCount: 0, timer: time.NewTimer(0), elapsed: true},
-		window.MouseButtonMiddle: {clickCount: 0, timer: time.NewTimer(0), elapsed: true},
+		window.MouseButtonLeft:   {clickCount: 0, lastClick: time.Now()},
+		window.MouseButtonRight:  {clickCount: 0, lastClick: time.Now()},
+		window.MouseButtonMiddle: {clickCount: 0, lastClick: time.Now()},
 	}
-
-	<-ms.states[window.MouseButtonLeft].timer.C
-	<-ms.states[window.MouseButtonRight].timer.C
-	<-ms.states[window.MouseButtonMiddle].timer.C
 
 	// Subscribe to window mouse events
 	ms.win.SubscribeID(window.OnMouseUp, &ms, ms.onMouseUp)
@@ -119,16 +108,18 @@ func (ms *MouseState) onMouseDown(evname string, ev interface{}) {
 	mev := ev.(*window.MouseEvent)
 	ms.lastButton = mev.Button
 
+	now := time.Now()
+
 	if ms.states[mev.Button].clickCount == 0 {
 		ms.states[mev.Button].clickCount = 1
-		ms.states[mev.Button].startTimer()
+		ms.states[mev.Button].lastClick = now
 		return
 	}
 
 	if ms.states[mev.Button].clickCount == -1 {
-		if ms.states[mev.Button].elapsed {
+		if ms.states[mev.Button].lastClick.Add(ms.DoubleClickDuration).Before(now) {
 			ms.states[mev.Button].clickCount = 1
-			ms.states[mev.Button].startTimer()
+			ms.states[mev.Button].lastClick = now
 			return
 		}
 
@@ -137,5 +128,5 @@ func (ms *MouseState) onMouseDown(evname string, ev interface{}) {
 	}
 
 	ms.states[mev.Button].clickCount = 1
-	ms.states[mev.Button].startTimer()
+	ms.states[mev.Button].lastClick = now
 }
