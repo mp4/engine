@@ -495,6 +495,7 @@ func newTab(text string, tb *TabBar, styles *TabStyles) *Tab {
 	tab.label = NewLabel(text)
 	tab.labelAlign = tab.tb.labelAlign
 	tab.iconClose = NewIcon(styles.IconClose)
+	tab.iconClose.borderSizes = RectBounds{1,1,1,1}
 	tab.header.Add(tab.label)
 	tab.header.Add(tab.iconClose)
 	// Creates the cover panel
@@ -512,6 +513,9 @@ func newTab(text string, tb *TabBar, styles *TabStyles) *Tab {
 	tab.header.Subscribe(OnCursorEnter, tab.onCursor)
 	tab.header.Subscribe(OnCursorLeave, tab.onCursor)
 	tab.header.Subscribe(OnMouseDown, tab.onMouseHeader)
+
+	tab.iconClose.Subscribe(OnCursorEnter, tab.onIconCloseCursor)
+	tab.iconClose.Subscribe(OnCursorLeave, tab.onIconCloseCursor)
 	tab.iconClose.Subscribe(OnMouseDown, tab.onMouseIcon)
 
 	tab.update()
@@ -543,6 +547,22 @@ func (tab *Tab) SetLabelAlign(align Align) bool {
 		return true
 	}
 	return false
+}
+
+// onIconCloseCursor process subscribed cursor events over the tab.iconClose label
+func (tab *Tab) onIconCloseCursor(evname string, ev interface{}) {
+
+	switch evname {
+	case OnCursorEnter:
+		tab.iconClose.SetBgColor4(&tab.styles.Normal.BgColor)
+		tab.iconClose.SetBordersColor4(&math32.Color4{0,0,0,1})
+	case OnCursorLeave:
+		tab.iconClose.SetBgColor4(&math32.Color4{0,0,0,0})
+		tab.iconClose.SetBordersColor4(&math32.Color4{0,0,0,0})
+	default:
+		return
+	}
+	tab.header.root.StopPropagation(StopAll)
 }
 
 // onCursor process subscribed cursor events over the tab header

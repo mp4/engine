@@ -88,7 +88,6 @@ func (dl *DockLayout) Recalc(ipan IPanel) {
 					child.SetPosition(x+w, y)
 					child.SetHeight(h)
 				}
-				continue
 			}
 		}
 	}
