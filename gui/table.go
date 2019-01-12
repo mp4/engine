@@ -125,13 +125,12 @@ type TableResizerStyle struct {
 
 // TableStyles describes all styles of the table header and rows
 type TableStyles struct {
-	Header    TableHeaderStyle
-	RowEven   TableRowStyle
-	RowOdd    TableRowStyle
-	RowCursor TableRowStyle
-	RowSel    TableRowStyle
-	Status    TableStatusStyle
-	Resizer   TableResizerStyle
+	Header  TableHeaderStyle
+	RowEven TableRowStyle
+	RowOdd  TableRowStyle
+	RowSel  TableRowStyle
+	Status  TableStatusStyle
+	Resizer TableResizerStyle
 }
 
 // TableClickEvent describes a mouse click event over a table
@@ -855,9 +854,26 @@ func (t *Table) onMouse(evname string, ev interface{}) {
 		t.findClick(&tce)
 		// If row is clicked, selects it
 		if tce.Row >= 0 && e.Button == window.MouseButtonLeft {
+			if e.Mods == 0 {
+				for ri := 0; ri < len(t.rows); ri++ {
+					t.deselectRow(ri)
+				}
+			}
+			if t.selType == TableSelMultiRow && e.Mods == window.ModShift && t.rowCursor >= 0 {
+				min := tce.Row
+				max := t.rowCursor
+				if min > max {
+					min, max = max, min
+				}
+				for i := min; i <= max; i++ {
+					t.selectRow(i)
+				}
+			}
 			t.rowCursor = tce.Row
 			if t.selType == TableSelMultiRow && e.Mods == window.ModControl {
 				t.toggleRowSel(t.rowCursor)
+			} else {
+				t.selectRow(t.rowCursor)
 			}
 			t.recalc()
 			t.Dispatch(OnChange, nil)
@@ -1114,16 +1130,29 @@ func (t *Table) lastPage() {
 	t.Dispatch(OnChange, nil)
 }
 
+// deselectRow deselects the specified row.
+// Should be used only when multi row selection is enabled
+func (t *Table) deselectRow(ri int) {
+
+	trow := t.rows[ri]
+	if trow.selected {
+		trow.selected = false
+		t.Dispatch(OnChange, nil)
+	}
+}
+
 // selectRow selects the specified row.
 // Should be used only when multi row selection is enabled
 func (t *Table) selectRow(ri int) {
 
 	trow := t.rows[ri]
-	trow.selected = true
-	t.Dispatch(OnChange, nil)
+	if !trow.selected {
+		trow.selected = true
+		t.Dispatch(OnChange, nil)
+	}
 }
 
-// toggleRowSel toogles the specified row selection state
+// toggleRowSel toggles the specified row selection state
 // Should be used only when multi row selection is enabled
 func (t *Table) toggleRowSel(ri int) {
 
@@ -1547,9 +1576,7 @@ func (t *Table) updateRowStyle(ri int) {
 
 	row := t.rows[ri]
 	var trs TableRowStyle
-	if ri == t.rowCursor {
-		trs = t.styles.RowCursor
-	} else if row.selected {
+	if row.selected {
 		trs = t.styles.RowSel
 	} else {
 		if ri%2 == 0 {

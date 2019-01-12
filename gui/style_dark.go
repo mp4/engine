@@ -349,8 +349,6 @@ func NewDarkStyle() *Style {
 	s.Table.RowEven.FgColor = s.Color.Text
 	s.Table.RowOdd = s.Table.RowEven
 	s.Table.RowOdd.BgColor = s.Color.BgMed
-	s.Table.RowCursor = s.Table.RowEven
-	s.Table.RowCursor.BgColor = s.Color.Highlight
 	s.Table.RowSel = s.Table.RowEven
 	s.Table.RowSel.BgColor = s.Color.Select
 	s.Table.Status = TableStatusStyle{}

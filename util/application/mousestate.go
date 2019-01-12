@@ -10,15 +10,15 @@ const DefaultDoubleClickDuration = 300
 
 // MouseState keeps track of the state of pressed mouse buttons.
 type MouseState struct {
-	win    window.IWindow
-	lastButton window.MouseButton
+	win                 window.IWindow
+	lastButton          window.MouseButton
 	DoubleClickDuration time.Duration
-	states map[window.MouseButton]*mouseButtonState
+	states              map[window.MouseButton]*mouseButtonState
 }
 
 type mouseButtonState struct {
 	clickCount int
-	lastClick time.Time
+	lastClick  time.Time
 }
 
 func (s *mouseButtonState) doubleClicked() bool {

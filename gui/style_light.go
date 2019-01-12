@@ -343,8 +343,6 @@ func NewLightStyle() *Style {
 	s.Table.RowEven.FgColor = fgColor
 	s.Table.RowOdd = s.Table.RowEven
 	s.Table.RowOdd.BgColor = math32.Color4{0.88, 0.88, 0.88, 1}
-	s.Table.RowCursor = s.Table.RowEven
-	s.Table.RowCursor.BgColor = math32.Color4{0.75, 0.75, 0.75, 1}
 	s.Table.RowSel = s.Table.RowEven
 	s.Table.RowSel.BgColor = math32.Color4{0.70, 0.70, 0.70, 1}
 	s.Table.Status = TableStatusStyle{}

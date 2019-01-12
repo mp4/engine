@@ -495,7 +495,7 @@ func newTab(text string, tb *TabBar, styles *TabStyles) *Tab {
 	tab.label = NewLabel(text)
 	tab.labelAlign = tab.tb.labelAlign
 	tab.iconClose = NewIcon(styles.IconClose)
-	tab.iconClose.borderSizes = RectBounds{1,1,1,1}
+	tab.iconClose.borderSizes = RectBounds{1, 1, 1, 1}
 	tab.header.Add(tab.label)
 	tab.header.Add(tab.iconClose)
 	// Creates the cover panel
@@ -555,10 +555,10 @@ func (tab *Tab) onIconCloseCursor(evname string, ev interface{}) {
 	switch evname {
 	case OnCursorEnter:
 		tab.iconClose.SetBgColor4(&tab.styles.Normal.BgColor)
-		tab.iconClose.SetBordersColor4(&math32.Color4{0,0,0,1})
+		tab.iconClose.SetBordersColor4(&math32.Color4{0, 0, 0, 1})
 	case OnCursorLeave:
-		tab.iconClose.SetBgColor4(&math32.Color4{0,0,0,0})
-		tab.iconClose.SetBordersColor4(&math32.Color4{0,0,0,0})
+		tab.iconClose.SetBgColor4(&math32.Color4{0, 0, 0, 0})
+		tab.iconClose.SetBordersColor4(&math32.Color4{0, 0, 0, 0})
 	default:
 		return
 	}
