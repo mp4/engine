@@ -515,6 +515,22 @@ func (t *Table) InsertRow(row int, values map[string]interface{}) {
 	t.Dispatch(OnTableRowCount, nil)
 }
 
+// SwitchRows switches the specified rows
+func (t *Table) SwitchRows(row1, row2 int) {
+	// Checks row1 index
+	if row1 < 0 || row1 >= len(t.rows) {
+		panic(tableErrInvRow)
+	}
+	// Checks row2 index
+	if row2 < 0 || row2 >= len(t.rows) {
+		panic(tableErrInvRow)
+	}
+
+	t.rows[row1], t.rows[row2] = t.rows[row2], t.rows[row1]
+	t.recalc()
+	t.Dispatch(OnChange, nil)
+}
+
 // RemoveRow removes from the specified row from the table
 func (t *Table) RemoveRow(row int) {
 
