@@ -244,7 +244,7 @@ func buildCheckBox(b *Builder, am map[string]interface{}) (IPanel, error) {
 // buildRadioButton builds a gui object of type: RadioButton
 func buildRadioButton(b *Builder, am map[string]interface{}) (IPanel, error) {
 
-	// Builds check box and set commont attributes
+	// Builds check box and set common attributes
 	var text string
 	if am[AttribText] != nil {
 		text = am[AttribText].(string)
@@ -257,7 +257,12 @@ func buildRadioButton(b *Builder, am map[string]interface{}) (IPanel, error) {
 
 	// Sets optional radio button group
 	if gr := am[AttribGroup]; gr != nil {
-		rb.SetGroup(gr.(string))
+		gg := rb.GetGroups(gr.(string))
+		if len(gg) == 0 {
+			rg := NewRadioGroup(true)
+			rg.name = gr.(string)
+			rg.Add(rb)
+		}
 	}
 
 	// Sets optional checked value

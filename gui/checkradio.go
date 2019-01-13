@@ -23,12 +23,19 @@ type CheckRadio struct {
 	icon       *Label
 	styles     *CheckRadioStyles
 	check      bool
-	group      string // current group name
 	cursorOver bool
 	state      bool
 	codeON     string
 	codeOFF    string
-	subroot    bool // indicates root subcription
+	groups     []*RadioGroup // Slice of pointers to all radio groups the radio button is a member of
+}
+
+// RadioGroup holds only radio buttons and ensures
+// that at most one of them is selected at a time
+type RadioGroup struct {
+	name               string        // the name of this radio group
+	members            []*CheckRadio // Slice of pointers to the toggle button members
+	DeselectingAllowed bool          // Whether deselecting is allowed for its members
 }
 
 // CheckRadioStyle contains the styling of a CheckRadio
@@ -98,6 +105,103 @@ func newCheckRadio(check bool, text string) *CheckRadio {
 	return cb
 }
 
+// NewRadioGroup creates and returns a pointer to a new radio group.
+func NewRadioGroup(allowDeselecting bool) *RadioGroup {
+	rg := new(RadioGroup)
+	rg.DeselectingAllowed = allowDeselecting
+	return rg
+}
+
+// Add adds the given radio button to the members of this radio group if it is
+// not already contained and is indeed a radio button, in which case true is returned.
+// Otherwise nothing happens and false is returned.
+func (rg *RadioGroup) Add(radioButton *CheckRadio) bool {
+	if radioButton.check || rg.Contains(radioButton) {
+		return false
+	}
+	rg.members = append(rg.members, radioButton)
+	radioButton.groups = append(radioButton.groups, rg)
+	return true
+}
+
+// Remove removes the given button from the members of this toggle group if it is
+// contained, in which case true is returned.
+// Otherwise nothing happens and false is returned.
+func (rg *RadioGroup) Remove(radioButton *CheckRadio) bool {
+	if radioButton.check {
+		return false
+	}
+	for i, b := range rg.members {
+		if b == radioButton {
+			rg.members = append(rg.members[:i], rg.members[i+1:]...)
+			for i, g := range radioButton.groups {
+				if g == rg {
+					radioButton.groups = append(radioButton.groups[:i], radioButton.groups[i+1:]...)
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+// Contains returns true if the given radio button is a member of this radio group.
+// Otherwise false is returned.
+func (rg *RadioGroup) Contains(radioButton *CheckRadio) bool {
+	if radioButton.check {
+		return false
+	}
+	for _, b := range rg.members {
+		if b == radioButton {
+			return true
+		}
+	}
+	return false
+}
+
+// deselectOthers deselects all radio buttons contained in this radio group except the
+// given one.
+func (rg *RadioGroup) deselectOthers(radioButton *CheckRadio) {
+	if radioButton.check {
+		return
+	}
+	for _, cb := range rg.members {
+		if cb != radioButton {
+			if cb.state {
+				cb.state = false
+				cb.update()
+				cb.root.Dispatch(OnRadioGroup, cb)
+			}
+		}
+	}
+}
+
+// deselectingAllowed returns true if none of all radio groups this radio button is a member of
+// disallows deselecting. Otherwise false is returned.
+func (b *CheckRadio) deselectingAllowed() bool {
+	if b.check {
+		return true
+	}
+	for _, g := range b.groups {
+		if !g.DeselectingAllowed {
+			return false
+		}
+	}
+	return true
+}
+
+// GetGroup returns the radio groups of this button if any
+func (cb *CheckRadio) GetGroups(name string) []*RadioGroup {
+
+	var gg []*RadioGroup
+	for _, g := range cb.groups {
+		if g.name == name {
+			gg = append(gg, g)
+		}
+	}
+	return gg
+}
+
 // Value returns the current state of the checkbox
 func (cb *CheckRadio) Value() bool {
 
@@ -116,19 +220,6 @@ func (cb *CheckRadio) SetValue(state bool) *CheckRadio {
 	return cb
 }
 
-// Group returns the name of the radio group
-func (cb *CheckRadio) Group() string {
-
-	return cb.group
-}
-
-// SetGroup sets the name of the radio group
-func (cb *CheckRadio) SetGroup(group string) *CheckRadio {
-
-	cb.group = group
-	return cb
-}
-
 // SetStyles set the button styles overriding the default style
 func (cb *CheckRadio) SetStyles(bs *CheckRadioStyles) {
 
@@ -139,32 +230,24 @@ func (cb *CheckRadio) SetStyles(bs *CheckRadioStyles) {
 // toggleState toggles the current state of the checkbox/radiobutton
 func (cb *CheckRadio) toggleState() {
 
-	// Subscribes once to the root panel for OnRadioGroup events
-	// The root panel is used to dispatch events to all checkradios
-	if !cb.subroot {
-		cb.root.Subscribe(OnRadioGroup, func(name string, ev interface{}) {
-			cb.onRadioGroup(ev.(*CheckRadio))
-		})
-		cb.subroot = true
-	}
-
 	if cb.check {
 		cb.state = !cb.state
 	} else {
-		if len(cb.group) == 0 {
-			cb.state = !cb.state
-		} else {
-			if cb.state {
-				return
+		if cb.state && !cb.deselectingAllowed() {
+			return
+		}
+		if !cb.state {
+			for _, g := range cb.groups {
+				g.deselectOthers(cb)
 			}
-			cb.state = !cb.state
+		}
+		cb.state = !cb.state
+		if len(cb.groups) > 0 {
+			cb.root.Dispatch(OnRadioGroup, cb)
 		}
 	}
 	cb.update()
 	cb.Dispatch(OnChange, nil)
-	if !cb.check && len(cb.group) > 0 {
-		cb.root.Dispatch(OnRadioGroup, cb)
-	}
 }
 
 // onMouse process OnMouseDown events
@@ -207,21 +290,6 @@ func (cb *CheckRadio) onKey(evname string, ev interface{}) {
 		return
 	}
 	return
-}
-
-// onRadioGroup receives subscribed OnRadioGroup events
-func (cb *CheckRadio) onRadioGroup(other *CheckRadio) {
-
-	// If event is for this button, ignore
-	if cb == other {
-		return
-	}
-	// If other radio group is not the group of this button, ignore
-	if cb.group != other.group {
-		return
-	}
-	// Toggle this button state
-	cb.SetValue(!other.Value())
 }
 
 // update updates the visual appearance of the checkbox
