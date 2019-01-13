@@ -556,7 +556,7 @@ func (t *Table) SelectedIndices() []int {
 		res = append(res, t.rowCursor)
 	}
 	for ri := 0; ri < len(t.rows); ri++ {
-		if t.rows[ri].selected && ri != t.rowCursor {
+		if t.rows[ri].selected {
 			res = append(res, ri)
 		}
 	}
@@ -572,7 +572,7 @@ func (t *Table) SelectedRows() []*tableRow {
 		res = append(res, t.rows[t.rowCursor])
 	}
 	for ri := 0; ri < len(t.rows); ri++ {
-		if t.rows[ri].selected && ri != t.rowCursor {
+		if t.rows[ri].selected {
 			res = append(res, t.rows[ri])
 		}
 	}
