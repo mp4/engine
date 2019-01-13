@@ -629,7 +629,7 @@ func (t *Table) Rows(fi, li int) []map[string]interface{} {
 // Row returns a map with the current contents of the specified row index
 func (t *Table) Row(ri int) map[string]interface{} {
 
-	if ri < 0 || ri > len(t.header.cols) {
+	if ri < 0 || ri >= t.RowCount() {
 		panic(tableErrInvRow)
 	}
 	res := make(map[string]interface{})
@@ -1274,6 +1274,45 @@ func (t *Table) deselectRow(ri int) {
 		trow.selected = false
 		t.Dispatch(OnChange, nil)
 	}
+}
+
+// SelectRows selects the specified rows.
+func (t *Table) SelectRows(rows ...int) bool {
+	if len(rows) == 0 {
+		return false
+	}
+
+	// Deselect all no affected rows
+	ss := t.SelectedRows()
+	for _, r := range ss {
+		if containsInt(rows, r) {
+			continue
+		}
+		t.toggleRowSel(r)
+	}
+
+	var r int
+	if t.selType == TableSelSingleRow {
+		// Select last specified valid row
+		for i := len(rows) - 1; i >= 0; i-- {
+			r = rows[i]
+			if r < 0 || r >= len(t.rows) {
+				continue
+			}
+			t.selectRow(r)
+			return true
+		}
+		return false
+	}
+
+	// Select all specified valid rows
+	for _, r := range rows {
+		if r < 0 || r >= len(t.rows) {
+			continue
+		}
+		t.selectRow(r)
+	}
+	return true
 }
 
 // selectRow selects the specified row.
@@ -1940,4 +1979,13 @@ func cv2f64(v interface{}) float64 {
 	default:
 		return 0
 	}
+}
+
+func containsInt(ii []int, i int) bool {
+	for _, I := range ii {
+		if I == i {
+			return true
+		}
+	}
+	return false
 }
