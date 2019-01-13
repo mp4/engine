@@ -717,71 +717,49 @@ func (t *Table) insertRow(row int, values map[string]interface{}) {
 		trow.Panel.Add(cell)
 
 		cell.label.initialize("", StyleDefault().Font)
-		cell.Panel.SetLayout(NewDockLayout())
 
 		switch value := v.(type) {
 		case *Button:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *Chart:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *CheckRadio:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *DropDown:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *Edit:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *Image:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *ImageButton:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *ImageLabel:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *ItemScroller:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *Label:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *List:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *Menu:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *MenuItem:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *Panel:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *ScrollBar:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *Scroller:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *Slider:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *Splitter:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *TabBar:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *Table:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		case *Tree:
-			value.SetLayoutParams(&DockLayoutParams{DockCenter})
 			cell.Panel.Add(value)
 		default:
 			cell.Add(&cell.label)
@@ -1524,22 +1502,117 @@ func (t *Table) recalcRow(ri int) {
 			cell.label.SetText(text)
 		}
 		// Sets the cell label alignment inside the cell
+		var vw float32
+
+		switch value := cell.value.(type) {
+		case *Button:
+			vw = value.width
+		case *Chart:
+			vw = value.width
+		case *CheckRadio:
+			vw = value.width
+		case *DropDown:
+			vw = value.width
+		case *Edit:
+			vw = value.Width()
+		case *Image:
+			vw = value.width
+		case *ImageButton:
+			vw = value.width
+		case *ImageLabel:
+			vw = value.width
+		case *ItemScroller:
+			vw = value.width
+		case *Label:
+			vw = value.width
+		case *List:
+			vw = value.width
+		case *Menu:
+			vw = value.width
+		case *MenuItem:
+			vw = value.width
+		case *Panel:
+			vw = value.width
+		case *ScrollBar:
+			vw = value.width
+		case *Scroller:
+			vw = value.width
+		case *Slider:
+			vw = value.width
+		case *Splitter:
+			vw = value.width
+		case *TabBar:
+			vw = value.width
+		case *Table:
+			vw = value.width
+		case *Tree:
+			vw = value.width
+		default:
+			vw = cell.label.Width()
+		}
+
 		ccw := cell.ContentWidth()
-		lw := cell.label.Width()
-		space := ccw - lw
-		lx := float32(0)
+		space := ccw - vw
+		x := float32(0)
 		switch c.align {
 		case AlignLeft:
 		case AlignRight:
 			if space > 0 {
-				lx = ccw - lw
+				x = ccw - vw
 			}
 		case AlignCenter:
 			if space > 0 {
-				lx = space / 2
+				x = space / 2
 			}
 		}
-		cell.label.SetPosition(lx, 0)
+
+		switch value := cell.value.(type) {
+		case *Button:
+			value.SetPosition(x, 0)
+		case *Chart:
+			value.SetPosition(x, 0)
+		case *CheckRadio:
+			value.SetPosition(x, 0)
+		case *DropDown:
+			value.SetPosition(x, 0)
+		case *Edit:
+			value.SetPosition(x, 0)
+		case *Image:
+			value.SetPosition(x, 0)
+		case *ImageButton:
+			value.SetPosition(x, 0)
+		case *ImageLabel:
+			value.SetPosition(x, 0)
+		case *ItemScroller:
+			value.SetPosition(x, 0)
+		case *Label:
+			value.SetPosition(x, 0)
+		case *List:
+			value.SetPosition(x, 0)
+		case *Menu:
+			value.SetPosition(x, 0)
+		case *MenuItem:
+			value.SetPosition(x, 0)
+		case *Panel:
+			value.SetPosition(x, 0)
+		case *ScrollBar:
+			value.SetPosition(x, 0)
+		case *Scroller:
+			value.SetPosition(x, 0)
+		case *Slider:
+			value.SetPosition(x, 0)
+		case *Splitter:
+			value.SetPosition(x, 0)
+		case *TabBar:
+			value.SetPosition(x, 0)
+		case *Table:
+			value.SetPosition(x, 0)
+		case *Tree:
+			value.SetPosition(x, 0)
+		default:
+			cell.label.SetPosition(x, 0)
+		}
+
 		px += c.Width()
 	}
 	trow.SetContentWidth(px)
