@@ -190,6 +190,8 @@ type tableCell struct {
 	value interface{} // cell current value
 }
 
+var zeroValue = reflect.Value{}
+
 // NewTable creates and returns a pointer to a new Table with the
 // specified width, height and columns
 func NewTable(width, height float32, cols []TableColumn) (*Table, error) {
@@ -733,7 +735,6 @@ func (t *Table) insertRow(row int, values map[string]interface{}) {
 		}
 		if strct.Kind() == reflect.Struct {
 			f := strct.FieldByName("Panel")
-			zeroValue := reflect.Value{}
 			if f != zeroValue {
 				if f.Kind() == reflect.Ptr {
 					f = f.Elem()
@@ -1544,7 +1545,6 @@ func (t *Table) recalcRow(ri int) {
 		}
 		if strct.Kind() == reflect.Struct {
 			f := strct.FieldByName("Panel")
-			zeroValue := reflect.Value{}
 			if f != zeroValue {
 				if f.Kind() == reflect.Ptr {
 					f = f.Elem()
@@ -1571,7 +1571,6 @@ func (t *Table) recalcRow(ri int) {
 
 		if strct.Kind() == reflect.Struct {
 			f := strct.FieldByName("Panel")
-			zeroValue := reflect.Value{}
 			if f != zeroValue {
 				if f.Kind() == reflect.Ptr {
 					f = f.Elem()
