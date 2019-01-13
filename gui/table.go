@@ -547,9 +547,9 @@ func (t *Table) Clear() {
 	t.Dispatch(OnTableRowCount, nil)
 }
 
-// SelectedRows returns a slice with the indexes of the currently selected rows
-// If no row are selected returns an empty slice
-func (t *Table) SelectedRows() []int {
+// SelectedIndices returns a slice with the indexes of the currently selected rows
+// If no row is selected returns an empty slice
+func (t *Table) SelectedIndices() []int {
 
 	res := make([]int, 0)
 	if t.rowCursor >= 0 {
@@ -558,6 +558,22 @@ func (t *Table) SelectedRows() []int {
 	for ri := 0; ri < len(t.rows); ri++ {
 		if t.rows[ri].selected && ri != t.rowCursor {
 			res = append(res, ri)
+		}
+	}
+	return res
+}
+
+// SelectedRows returns a slice with the currently selected rows
+// If no row is selected returns an empty slice
+func (t *Table) SelectedRows() []*tableRow {
+
+	res := make([]*tableRow, 0)
+	if t.rowCursor >= 0 {
+		res = append(res, t.rows[t.rowCursor])
+	}
+	for ri := 0; ri < len(t.rows); ri++ {
+		if t.rows[ri].selected && ri != t.rowCursor {
+			res = append(res, t.rows[ri])
 		}
 	}
 	return res
@@ -694,14 +710,85 @@ func (t *Table) insertRow(row int, values map[string]interface{}) {
 	trow := new(tableRow)
 	trow.Initialize(0, 0)
 	trow.cells = make([]*tableCell, 0)
-	for ci := 0; ci < len(t.header.cols); ci++ {
+	for _, col := range t.header.cols {
 		// Creates tableRow cell panel
+		v := values[col.id]
 		cell := new(tableCell)
 		cell.Initialize(0, 0)
-		cell.label.initialize("", StyleDefault().Font)
-		cell.Add(&cell.label)
+
 		trow.cells = append(trow.cells, cell)
 		trow.Panel.Add(cell)
+
+		cell.label.initialize("", StyleDefault().Font)
+		cell.Panel.SetLayout(NewDockLayout())
+
+		switch value := v.(type) {
+		case *Button:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *Chart:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *CheckRadio:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *DropDown:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *Edit:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *Image:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *ImageButton:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *ImageLabel:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *ItemScroller:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *Label:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *List:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *Menu:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *MenuItem:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *Panel:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *ScrollBar:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *Scroller:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *Slider:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *Splitter:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *TabBar:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *Table:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		case *Tree:
+			value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			cell.Panel.Add(value)
+		default:
+			cell.Add(&cell.label)
+		}
 	}
 	t.Panel.Add(trow)
 
