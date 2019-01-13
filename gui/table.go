@@ -7,6 +7,7 @@ package gui
 import (
 	"fmt"
 	"math"
+	"reflect"
 	"sort"
 	"strconv"
 
@@ -725,118 +726,30 @@ func (t *Table) insertRow(row int, values map[string]interface{}) {
 			cell.Panel.SetLayout(NewDockLayout())
 		}
 
-		switch value := v.(type) {
-		case *Button:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+		if reflect.ValueOf(v).Kind() == reflect.Ptr {
+			f := reflect.ValueOf(v).Elem().FieldByName("Panel")
+			zeroValue := reflect.Value{}
+			if f != zeroValue {
+				if f.Kind() == reflect.Ptr {
+					p := f.Interface().(*Panel)
+					if col.fill {
+						p.SetLayoutParams(&DockLayoutParams{DockCenter})
+					}
+				} else {
+					p := f.Interface().(Panel)
+					if col.fill {
+						p.SetLayoutParams(&DockLayoutParams{DockCenter})
+					}
+				}
+				cell.Panel.Add(reflect.ValueOf(v).Interface().(IPanel))
+				continue
 			}
-			cell.Panel.Add(value)
-		case *Chart:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *CheckRadio:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *DropDown:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *Edit:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *Image:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *ImageButton:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *ImageLabel:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *ItemScroller:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *Label:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *List:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *Menu:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *MenuItem:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *Panel:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *ScrollBar:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *Scroller:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *Slider:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *Splitter:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *TabBar:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *Table:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		case *Tree:
-			if col.fill {
-				value.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Panel.Add(value)
-		default:
-			if col.fill {
-				cell.label.SetLayoutParams(&DockLayoutParams{DockCenter})
-			}
-			cell.Add(&cell.label)
 		}
+
+		if col.fill {
+			cell.label.SetLayoutParams(&DockLayoutParams{DockCenter})
+		}
+		cell.Add(&cell.label)
 	}
 	t.Panel.Add(trow)
 
@@ -1623,51 +1536,20 @@ func (t *Table) recalcRow(ri int) {
 		// Sets the cell label alignment inside the cell
 		var vw float32
 
-		switch value := cell.value.(type) {
-		case *Button:
-			vw = value.width
-		case *Chart:
-			vw = value.width
-		case *CheckRadio:
-			vw = value.width
-		case *DropDown:
-			vw = value.width
-		case *Edit:
-			vw = value.Width()
-		case *Image:
-			vw = value.width
-		case *ImageButton:
-			vw = value.width
-		case *ImageLabel:
-			vw = value.width
-		case *ItemScroller:
-			vw = value.width
-		case *Label:
-			vw = value.width
-		case *List:
-			vw = value.width
-		case *Menu:
-			vw = value.width
-		case *MenuItem:
-			vw = value.width
-		case *Panel:
-			vw = value.width
-		case *ScrollBar:
-			vw = value.width
-		case *Scroller:
-			vw = value.width
-		case *Slider:
-			vw = value.width
-		case *Splitter:
-			vw = value.width
-		case *TabBar:
-			vw = value.width
-		case *Table:
-			vw = value.width
-		case *Tree:
-			vw = value.width
-		default:
-			vw = cell.label.Width()
+		if reflect.ValueOf(cell.value).Kind() == reflect.Ptr {
+			f := reflect.ValueOf(cell.value).Elem().FieldByName("Panel")
+			zeroValue := reflect.Value{}
+			if f != zeroValue {
+				if f.Kind() == reflect.Ptr {
+					p := f.Interface().(*Panel)
+					vw = p.width
+				} else {
+					p := f.Interface().(Panel)
+					vw = p.width
+				}
+			}
+		} else {
+			vw = cell.label.width
 		}
 
 		ccw := cell.ContentWidth()
@@ -1685,50 +1567,19 @@ func (t *Table) recalcRow(ri int) {
 			}
 		}
 
-		switch value := cell.value.(type) {
-		case *Button:
-			value.SetPosition(x, 0)
-		case *Chart:
-			value.SetPosition(x, 0)
-		case *CheckRadio:
-			value.SetPosition(x, 0)
-		case *DropDown:
-			value.SetPosition(x, 0)
-		case *Edit:
-			value.SetPosition(x, 0)
-		case *Image:
-			value.SetPosition(x, 0)
-		case *ImageButton:
-			value.SetPosition(x, 0)
-		case *ImageLabel:
-			value.SetPosition(x, 0)
-		case *ItemScroller:
-			value.SetPosition(x, 0)
-		case *Label:
-			value.SetPosition(x, 0)
-		case *List:
-			value.SetPosition(x, 0)
-		case *Menu:
-			value.SetPosition(x, 0)
-		case *MenuItem:
-			value.SetPosition(x, 0)
-		case *Panel:
-			value.SetPosition(x, 0)
-		case *ScrollBar:
-			value.SetPosition(x, 0)
-		case *Scroller:
-			value.SetPosition(x, 0)
-		case *Slider:
-			value.SetPosition(x, 0)
-		case *Splitter:
-			value.SetPosition(x, 0)
-		case *TabBar:
-			value.SetPosition(x, 0)
-		case *Table:
-			value.SetPosition(x, 0)
-		case *Tree:
-			value.SetPosition(x, 0)
-		default:
+		if reflect.ValueOf(cell.value).Kind() == reflect.Ptr {
+			f := reflect.ValueOf(cell.value).Elem().FieldByName("Panel")
+			zeroValue := reflect.Value{}
+			if f != zeroValue {
+				if f.Kind() == reflect.Ptr {
+					p := f.Interface().(*Panel)
+					p.SetPosition(x, 0)
+				} else {
+					p := f.Interface().(Panel)
+					p.SetPosition(x, 0)
+				}
+			}
+		} else {
 			cell.label.SetPosition(x, 0)
 		}
 	}
