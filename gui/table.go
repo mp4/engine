@@ -547,27 +547,14 @@ func (t *Table) Clear() {
 	t.Dispatch(OnTableRowCount, nil)
 }
 
-// SelectedIndices returns a slice with the indexes of the currently selected rows
+// SelectedRows returns a slice with the indexes of the currently selected rows.
 // If no row is selected returns an empty slice
-func (t *Table) SelectedIndices() []int {
+func (t *Table) SelectedRows() []int {
 
 	res := make([]int, 0)
 	for ri := 0; ri < len(t.rows); ri++ {
 		if t.rows[ri].selected {
 			res = append(res, ri)
-		}
-	}
-	return res
-}
-
-// SelectedRows returns a slice with the currently selected rows
-// If no row is selected returns an empty slice
-func (t *Table) SelectedRows() []*tableRow {
-
-	res := make([]*tableRow, 0)
-	for ri := 0; ri < len(t.rows); ri++ {
-		if t.rows[ri].selected {
-			res = append(res, t.rows[ri])
 		}
 	}
 	return res
@@ -584,7 +571,7 @@ func (t *Table) ShowStatus(show bool) {
 	t.recalc()
 }
 
-// SetStatusText sets the text of status line at the bottom of the table
+// SetStatusText sets the text of status line at the bottom of the table.
 // It does not change its current visibility
 func (t *Table) SetStatusText(text string) {
 
