@@ -87,6 +87,7 @@ type TableColumn struct {
 	Minwidth   float32         // Minimum width in pixels for this column
 	Hidden     bool            // Hidden flag
 	Align      Align           // Cell content alignment: AlignLeft|AlignCenter|AlignRight
+	Fill       bool            // Whether cell content fills the cell (default false, overrides Align if true)
 	Format     string          // Format string for formatting the columns' cells
 	FormatFunc TableFormatFunc // Format function (overrides Format string)
 	Expand     float32         // Column width expansion factor (0 for no expansion)
@@ -164,6 +165,7 @@ type tableColHeader struct {
 	format     string          // column format string
 	formatFunc TableFormatFunc // column format function
 	align      Align           // column alignment
+	fill       bool            // column fill
 	expand     float32         // column expand factor
 	sort       TableSortType   // column sort type
 	resize     bool            // column can be resized by user
@@ -228,6 +230,7 @@ func NewTable(width, height float32, cols []TableColumn) (*Table, error) {
 			c.width = c.minWidth
 		}
 		c.align = cdesc.Align
+		c.fill = cdesc.Fill
 		c.format = cdesc.Format
 		c.formatFunc = cdesc.FormatFunc
 		c.expand = cdesc.Expand
@@ -718,50 +721,120 @@ func (t *Table) insertRow(row int, values map[string]interface{}) {
 
 		cell.label.initialize("", StyleDefault().Font)
 
+		if col.fill {
+			cell.Panel.SetLayout(NewDockLayout())
+		}
+
 		switch value := v.(type) {
 		case *Button:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *Chart:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *CheckRadio:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *DropDown:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *Edit:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *Image:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *ImageButton:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *ImageLabel:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *ItemScroller:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *Label:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *List:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *Menu:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *MenuItem:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *Panel:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *ScrollBar:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *Scroller:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *Slider:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *Splitter:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *TabBar:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *Table:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		case *Tree:
+			if col.fill {
+				value.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Panel.Add(value)
 		default:
+			if col.fill {
+				cell.label.SetLayoutParams(&DockLayoutParams{DockCenter})
+			}
 			cell.Add(&cell.label)
 		}
 	}
@@ -1501,6 +1574,13 @@ func (t *Table) recalcRow(ri int) {
 			text := c.formatFunc(TableCell{t, ri, c.id, cell.value})
 			cell.label.SetText(text)
 		}
+
+		px += c.Width()
+
+		if c.fill {
+			continue
+		}
+
 		// Sets the cell label alignment inside the cell
 		var vw float32
 
@@ -1612,8 +1692,6 @@ func (t *Table) recalcRow(ri int) {
 		default:
 			cell.label.SetPosition(x, 0)
 		}
-
-		px += c.Width()
 	}
 	trow.SetContentWidth(px)
 }
