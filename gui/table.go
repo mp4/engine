@@ -729,22 +729,27 @@ func (t *Table) insertRow(row int, values map[string]interface{}) {
 		}
 
 		value := reflect.ValueOf(v)
-		strct := value
-		if strct.Kind() == reflect.Ptr {
-			strct = strct.Elem()
-		}
-		if strct.Kind() == reflect.Struct {
-			f := strct.FieldByName("Panel")
-			if f != zeroValue {
-				if f.Kind() == reflect.Ptr {
-					f = f.Elem()
+		if value.CanInterface() {
+			ipanel, ok := value.Interface().(IPanel)
+			if ok {
+				strct := value
+				if strct.Kind() == reflect.Ptr {
+					strct = strct.Elem()
 				}
-				p := f.Interface().(Panel)
-				if col.fill {
-					p.SetLayoutParams(&DockLayoutParams{DockCenter})
+				if strct.Kind() == reflect.Struct {
+					f := strct.FieldByName("Panel")
+					if f != zeroValue {
+						if f.Kind() != reflect.Ptr {
+							f = f.Addr()
+						}
+						p := f.Interface().(*Panel)
+						if col.fill {
+							p.SetLayoutParams(&DockLayoutParams{DockCenter})
+						}
+						cell.Panel.Add(ipanel)
+						continue
+					}
 				}
-				cell.Panel.Add(value.Interface().(IPanel))
-				continue
 			}
 		}
 
@@ -1536,21 +1541,24 @@ func (t *Table) recalcRow(ri int) {
 		}
 
 		// Sets the cell label alignment inside the cell
-		var vw float32
+		vw := cell.label.width
 
 		value := reflect.ValueOf(cell.value)
 		strct := value
 		if strct.Kind() == reflect.Ptr {
 			strct = strct.Elem()
 		}
-		if strct.Kind() == reflect.Struct {
-			f := strct.FieldByName("Panel")
-			if f != zeroValue {
-				if f.Kind() == reflect.Ptr {
-					f = f.Elem()
+		if value.CanInterface() && strct.Kind() == reflect.Struct {
+			_, ok := value.Interface().(IPanel)
+			if ok {
+				f := strct.FieldByName("Panel")
+				if f != zeroValue {
+					if f.Kind() != reflect.Ptr {
+						f = f.Addr()
+					}
+					p := f.Interface().(*Panel)
+					vw = p.width
 				}
-				p := f.Interface().(Panel)
-				vw = p.width
 			}
 		}
 
@@ -1569,14 +1577,17 @@ func (t *Table) recalcRow(ri int) {
 			}
 		}
 
-		if strct.Kind() == reflect.Struct {
-			f := strct.FieldByName("Panel")
-			if f != zeroValue {
-				if f.Kind() == reflect.Ptr {
-					f = f.Elem()
+		if value.CanInterface() && strct.Kind() == reflect.Struct {
+			_, ok := value.Interface().(IPanel)
+			if ok {
+				f := strct.FieldByName("Panel")
+				if f != zeroValue {
+					if f.Kind() != reflect.Ptr {
+						f = f.Addr()
+					}
+					p := f.Interface().(*Panel)
+					p.SetPosition(x, 0)
 				}
-				p := f.Interface().(Panel)
-				p.SetPosition(x, 0)
 			}
 			continue
 		}
