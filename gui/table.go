@@ -552,9 +552,6 @@ func (t *Table) Clear() {
 func (t *Table) SelectedIndices() []int {
 
 	res := make([]int, 0)
-	if t.rowCursor >= 0 {
-		res = append(res, t.rowCursor)
-	}
 	for ri := 0; ri < len(t.rows); ri++ {
 		if t.rows[ri].selected {
 			res = append(res, ri)
@@ -568,9 +565,6 @@ func (t *Table) SelectedIndices() []int {
 func (t *Table) SelectedRows() []*tableRow {
 
 	res := make([]*tableRow, 0)
-	if t.rowCursor >= 0 {
-		res = append(res, t.rows[t.rowCursor])
-	}
 	for ri := 0; ri < len(t.rows); ri++ {
 		if t.rows[ri].selected {
 			res = append(res, t.rows[ri])
