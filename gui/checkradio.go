@@ -93,8 +93,10 @@ func newCheckRadio(check bool, text string) *CheckRadio {
 
 	// Creates label
 	cb.Label = NewLabel(text)
-	cb.Label.Subscribe(OnResize, func(evname string, ev interface{}) { cb.recalc() })
-	cb.Panel.Add(cb.Label)
+	if len(text) > 0 {
+		cb.Label.Subscribe(OnResize, func(evname string, ev interface{}) { cb.recalc() })
+		cb.Panel.Add(cb.Label)
+	}
 
 	// Creates icon label
 	cb.icon = NewIcon(" ")
@@ -328,10 +330,13 @@ func (cb *CheckRadio) recalc() {
 	cb.icon.SetPosition(0, 0)
 
 	// Label position
-	spacing := float32(4)
-	cb.Label.SetPosition(cb.icon.Width()+spacing, 0)
+	width := cb.icon.Width()
+	if len(cb.Label.text) > 0 {
+		spacing := float32(4)
+		cb.Label.SetPosition(cb.icon.Width()+spacing, 0)
+		width += spacing + cb.Label.Width()
+	}
 
 	// Content width
-	width := cb.icon.Width() + spacing + cb.Label.Width()
 	cb.SetContentSize(width, cb.Label.Height())
 }
