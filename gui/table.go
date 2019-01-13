@@ -726,22 +726,23 @@ func (t *Table) insertRow(row int, values map[string]interface{}) {
 			cell.Panel.SetLayout(NewDockLayout())
 		}
 
-		if reflect.ValueOf(v).Kind() == reflect.Ptr {
-			f := reflect.ValueOf(v).Elem().FieldByName("Panel")
+		value := reflect.ValueOf(v)
+		strct := value
+		if strct.Kind() == reflect.Ptr {
+			strct = strct.Elem()
+		}
+		if strct.Kind() == reflect.Struct {
+			f := strct.FieldByName("Panel")
 			zeroValue := reflect.Value{}
 			if f != zeroValue {
 				if f.Kind() == reflect.Ptr {
-					p := f.Interface().(*Panel)
-					if col.fill {
-						p.SetLayoutParams(&DockLayoutParams{DockCenter})
-					}
-				} else {
-					p := f.Interface().(Panel)
-					if col.fill {
-						p.SetLayoutParams(&DockLayoutParams{DockCenter})
-					}
+					f = f.Elem()
 				}
-				cell.Panel.Add(reflect.ValueOf(v).Interface().(IPanel))
+				p := f.Interface().(Panel)
+				if col.fill {
+					p.SetLayoutParams(&DockLayoutParams{DockCenter})
+				}
+				cell.Panel.Add(value.Interface().(IPanel))
 				continue
 			}
 		}
@@ -1536,20 +1537,21 @@ func (t *Table) recalcRow(ri int) {
 		// Sets the cell label alignment inside the cell
 		var vw float32
 
-		if reflect.ValueOf(cell.value).Kind() == reflect.Ptr {
-			f := reflect.ValueOf(cell.value).Elem().FieldByName("Panel")
+		value := reflect.ValueOf(cell.value)
+		strct := value
+		if strct.Kind() == reflect.Ptr {
+			strct = strct.Elem()
+		}
+		if strct.Kind() == reflect.Struct {
+			f := strct.FieldByName("Panel")
 			zeroValue := reflect.Value{}
 			if f != zeroValue {
 				if f.Kind() == reflect.Ptr {
-					p := f.Interface().(*Panel)
-					vw = p.width
-				} else {
-					p := f.Interface().(Panel)
-					vw = p.width
+					f = f.Elem()
 				}
+				p := f.Interface().(Panel)
+				vw = p.width
 			}
-		} else {
-			vw = cell.label.width
 		}
 
 		ccw := cell.ContentWidth()
@@ -1567,21 +1569,20 @@ func (t *Table) recalcRow(ri int) {
 			}
 		}
 
-		if reflect.ValueOf(cell.value).Kind() == reflect.Ptr {
-			f := reflect.ValueOf(cell.value).Elem().FieldByName("Panel")
+		if strct.Kind() == reflect.Struct {
+			f := strct.FieldByName("Panel")
 			zeroValue := reflect.Value{}
 			if f != zeroValue {
 				if f.Kind() == reflect.Ptr {
-					p := f.Interface().(*Panel)
-					p.SetPosition(x, 0)
-				} else {
-					p := f.Interface().(Panel)
-					p.SetPosition(x, 0)
+					f = f.Elem()
 				}
+				p := f.Interface().(Panel)
+				p.SetPosition(x, 0)
 			}
-		} else {
-			cell.label.SetPosition(x, 0)
+			continue
 		}
+
+		cell.label.SetPosition(x, 0)
 	}
 	trow.SetContentWidth(px)
 }
