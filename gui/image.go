@@ -16,11 +16,22 @@ type Image struct {
 }
 
 // NewImage creates and returns an image panel with the image
-// from the specified image used as a texture.
+// from the specified image file used as a texture.
 // Initially the size of the panel content area is the exact size of the image.
 func NewImage(imgfile string) (image *Image, err error) {
 
 	tex, err := texture.NewTexture2DFromImage(imgfile)
+	if err != nil {
+		return nil, err
+	}
+	return NewImageFromTex(tex), nil
+}
+
+// NewImageSection creates and returns an image panel with the specified section
+// of the image from the specified image file used as a texture.
+func NewImageSection(imgfile string, section *image.Rectangle) (image *Image, err error) {
+
+	tex, err := texture.NewTexture2DFromImageSection(imgfile, section)
 	if err != nil {
 		return nil, err
 	}

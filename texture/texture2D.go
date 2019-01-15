@@ -87,6 +87,22 @@ func NewTexture2DFromImage(imgfile string) (*Texture2D, error) {
 	return t, nil
 }
 
+// NewTexture2DFromImage creates and returns a pointer to a new Texture2D
+// using the specified image file as data.
+// Supported image formats are: PNG, JPEG and GIF.
+func NewTexture2DFromImageSection(imgfile string, section *image.Rectangle) (*Texture2D, error) {
+
+	// Decodes image file into RGBA8
+	rgba, err := DecodeImageSection(imgfile, section)
+	if err != nil {
+		return nil, err
+	}
+
+	t := newTexture2D()
+	t.SetFromRGBA(rgba)
+	return t, nil
+}
+
 // NewTexture2DFromRGBA creates a new texture from a pointer to an RGBA image object.
 func NewTexture2DFromRGBA(rgba *image.RGBA) *Texture2D {
 
@@ -301,6 +317,32 @@ func DecodeImage(imgfile string) (*image.RGBA, error) {
 		return nil, fmt.Errorf("unsupported stride")
 	}
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+	return rgba, nil
+}
+
+// DecodeImageSection reads and decodes the specified section of the specified image file into RGBA8.
+// The supported image files are PNG, JPEG and GIF.
+func DecodeImageSection(imgfile string, section *image.Rectangle) (*image.RGBA, error) {
+
+	// Open image file
+	file, err := os.Open(imgfile)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// Decodes image
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return nil, err
+	}
+
+	// Converts image to RGBA format
+	rgba := image.NewRGBA(*section)
+	if rgba.Stride != rgba.Rect.Size().X*4 {
+		return nil, fmt.Errorf("unsupported stride")
+	}
+	draw.Draw(rgba, rgba.Bounds(), img, image.Point{section.Min.X, section.Min.Y}, draw.Src)
 	return rgba, nil
 }
 
