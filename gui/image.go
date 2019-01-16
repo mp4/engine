@@ -79,3 +79,15 @@ func (i *Image) SetImage(imgfile string) error {
 	i.SetTexture(tex)
 	return nil
 }
+
+// RGBA returns a pointer to the image texture image.RGBA object
+func (i *Image) RGBA() *image.RGBA {
+
+	return i.tex.RGBA
+}
+
+// UpdateData forces to send image texture data to OpenGL
+func (i *Image) UpdateData() {
+
+	i.tex.UpdateData()
+}

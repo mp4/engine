@@ -45,6 +45,7 @@ type Texture2D struct {
 		flipY   float32
 		visible float32
 	}
+	RGBA *image.RGBA
 }
 
 func newTexture2D() *Texture2D {
@@ -180,6 +181,7 @@ func (t *Texture2D) SetFromRGBA(rgba *image.RGBA) {
 		gls.RGBA8,
 		rgba.Pix,
 	)
+	t.RGBA = rgba
 }
 
 // SetData sets the texture data
@@ -292,6 +294,12 @@ func (t *Texture2D) Width() int {
 func (t *Texture2D) Height() int {
 
 	return int(t.height)
+}
+
+// UpdateData forces to send texture data to OpenGL
+func (t *Texture2D) UpdateData() {
+
+	t.updateData = true
 }
 
 // DecodeImage reads and decodes the specified image file into RGBA8.
