@@ -415,7 +415,7 @@ func (tb *TabBar) recalc() {
 				cpan.SetHeight(tb.ContentHeight() - cpan.Position().Y)
 			} else {
 				cpan.SetPosition(0, 0)
-				cpan.SetHeight(headery)
+				cpan.SetHeight(headery - 1)
 			}
 		}
 		// If Tab can be shown set its header visible
