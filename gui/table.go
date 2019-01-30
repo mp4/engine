@@ -1548,7 +1548,7 @@ func (t *Table) recalcRow(ri int) {
 		if strct.Kind() == reflect.Ptr {
 			strct = strct.Elem()
 		}
-		if value.CanInterface() && strct.Kind() == reflect.Struct {
+		if value != zeroValue && value.CanInterface() && strct.Kind() == reflect.Struct {
 			_, ok := value.Interface().(IPanel)
 			if ok {
 				f := strct.FieldByName("Panel")
@@ -1577,7 +1577,7 @@ func (t *Table) recalcRow(ri int) {
 			}
 		}
 
-		if value.CanInterface() && strct.Kind() == reflect.Struct {
+		if value != zeroValue && value.CanInterface() && strct.Kind() == reflect.Struct {
 			_, ok := value.Interface().(IPanel)
 			if ok {
 				f := strct.FieldByName("Panel")
