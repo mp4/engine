@@ -24,13 +24,8 @@ type Plane struct {
 // The plane is generated centered in the XY plane with Z=0.
 func NewPlane(width, height float32, widthSegments, heightSegments int) *Plane {
 
-	plane := new(Plane)
+	plane := Plane{Width: width, Height: height, WidthSegments: widthSegments, HeightSegments: heightSegments}
 	plane.Geometry.Init()
-
-	plane.Width = width
-	plane.Height = height
-	plane.WidthSegments = widthSegments
-	plane.HeightSegments = heightSegments
 
 	widthHalf := width / 2
 	heightHalf := height / 2
@@ -83,5 +78,5 @@ func NewPlane(width, height float32, widthSegments, heightSegments int) *Plane {
 	plane.volume = 0
 	plane.volumeValid = true
 
-	return plane
+	return &plane
 }

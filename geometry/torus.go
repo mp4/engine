@@ -23,14 +23,8 @@ type Torus struct {
 // NewTorus returns a pointer to a new torus geometry
 func NewTorus(radius, tube float64, radialSegments, tubularSegments int, arc float64) *Torus {
 
-	t := new(Torus)
+	t := Torus{Radius: radius, Tube: tube, RadialSegments: radialSegments, Arc:arc}
 	t.Geometry.Init()
-
-	t.Radius = radius
-	t.Tube = tube
-	t.RadialSegments = radialSegments
-	t.TubularSegments = tubularSegments
-	t.Arc = arc
 
 	// Create buffers
 	positions := math32.NewArrayF32(0, 0)
@@ -73,5 +67,5 @@ func NewTorus(radius, tube float64, radialSegments, tubularSegments int, arc flo
 	t.AddVBO(gls.NewVBO(normals).AddAttrib(gls.VertexNormal))
 	t.AddVBO(gls.NewVBO(uvs).AddAttrib(gls.VertexTexcoord))
 
-	return t
+	return &t
 }

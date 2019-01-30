@@ -42,20 +42,13 @@ func NewBox(width, height, length float32) *Box {
 // of segments in each dimension. This is the Box constructor with most tunable parameters.
 func NewSegmentedBox(width, height, length float32, widthSegments, heightSegments, lengthSegments int) *Box {
 
-	box := new(Box)
+	box := Box{Width: width, Height: height, Length:length, WidthSegments: widthSegments, HeightSegments: heightSegments, LengthSegments: lengthSegments}
 	box.Geometry.Init()
 
 	// Validate arguments
 	if widthSegments <= 0 || heightSegments <= 0 || lengthSegments <= 0 {
 		panic("Invalid argument(s). All segment quantities should be greater than zero.")
 	}
-
-	box.Width = width
-	box.Height = height
-	box.Length = length
-	box.WidthSegments = widthSegments
-	box.HeightSegments = heightSegments
-	box.LengthSegments = lengthSegments
 
 	// Create buffers
 	positions := math32.NewArrayF32(0, 16)
@@ -156,5 +149,5 @@ func NewSegmentedBox(width, height, length float32, widthSegments, heightSegment
 	box.volume = width * height * length
 	box.volumeValid = true
 
-	return box
+	return &box
 }

@@ -29,18 +29,8 @@ func NewCylinder(radiusTop, radiusBottom, height float64,
 	radialSegments, heightSegments int,
 	thetaStart, thetaLength float64, top, bottom bool) *Cylinder {
 
-	c := new(Cylinder)
+	c := Cylinder{RadiusTop: radiusTop, RadiusBottom: radiusBottom, Height: height, RadialSegments: radialSegments, HeightSegments: heightSegments, ThetaStart: thetaStart, ThetaLength: thetaLength, Top: top, Bottom: bottom}
 	c.Geometry.Init()
-
-	c.RadiusTop = radiusTop
-	c.RadiusBottom = radiusBottom
-	c.Height = height
-	c.RadialSegments = radialSegments
-	c.HeightSegments = heightSegments
-	c.ThetaStart = thetaStart
-	c.ThetaLength = thetaLength
-	c.Top = top
-	c.Bottom = bottom
 
 	heightHalf := height / 2
 	vertices := [][]int{}
@@ -257,5 +247,5 @@ func NewCylinder(radiusTop, radiusBottom, height float64,
 	c.AddVBO(gls.NewVBO(normals).AddAttrib(gls.VertexNormal))
 	c.AddVBO(gls.NewVBO(uvs).AddAttrib(gls.VertexTexcoord))
 
-	return c
+	return &c
 }

@@ -25,15 +25,8 @@ type Sphere struct {
 // NewSphere returns a pointer to a new Sphere geometry object
 func NewSphere(radius float64, widthSegments, heightSegments int, phiStart, phiLength, thetaStart, thetaLength float64) *Sphere {
 
-	s := new(Sphere)
+	s := Sphere{Radius: radius, WidthSegments: widthSegments, HeightSegments: heightSegments, PhiStart: phiStart, PhiLength: phiLength, ThetaStart: thetaStart, ThetaLength: thetaLength}
 	s.Geometry.Init()
-
-	s.Radius = radius
-	s.WidthSegments = widthSegments
-	s.HeightSegments = heightSegments
-	s.PhiStart = phiStart
-	s.PhiLength = phiLength
-	s.ThetaStart = thetaStart
 
 	thetaEnd := thetaStart + thetaLength
 	vertexCount := (widthSegments + 1) * (heightSegments + 1)
@@ -97,5 +90,5 @@ func NewSphere(radius float64, widthSegments, heightSegments int, phiStart, phiL
 	s.boundingBox = math32.Box3{math32.Vector3{-r, -r, -r}, math32.Vector3{r, r, r}}
 	s.boundingBoxValid = true
 
-	return s
+	return &s
 }

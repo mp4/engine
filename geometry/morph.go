@@ -13,11 +13,11 @@ import (
 
 // MorphGeometry represents a base geometry and its morph targets.
 type MorphGeometry struct {
-	baseGeometry *Geometry   // The base geometry
-	targets      []*Geometry // The morph target geometries (containing deltas)
-	weights      []float32   // The weights for each morph target
-	uniWeights   gls.Uniform // Texture unit uniform location cache
-	morphGeom    *Geometry   // Cache of the last CPU-morphed geometry
+	BaseGeometry *Geometry   // The base geometry
+	Targets      []*Geometry // The morph target geometries (containing deltas)
+	Weights      []float32   // The weights for each morph target
+	UniWeights   gls.Uniform // Texture unit uniform location cache
+	MorphGeom    *Geometry   // Cache of the last CPU-morphed geometry
 }
 
 // MaxActiveMorphTargets is the maximum number of active morph targets.
@@ -26,47 +26,42 @@ const MaxActiveMorphTargets = 8
 // NewMorphGeometry creates and returns a pointer to a new MorphGeometry.
 func NewMorphGeometry(baseGeometry *Geometry) *MorphGeometry {
 
-	mg := new(MorphGeometry)
-	mg.baseGeometry = baseGeometry
+	mg := MorphGeometry{}
+	mg.BaseGeometry = baseGeometry
 
-	mg.targets = make([]*Geometry, 0)
-	mg.weights = make([]float32, 0)
+	mg.Targets = make([]*Geometry, 0)
+	mg.Weights = make([]float32, 0)
 
-	mg.baseGeometry.ShaderDefines.Set("MORPHTARGETS", strconv.Itoa(MaxActiveMorphTargets))
-	mg.uniWeights.Init("morphTargetInfluences")
-	return mg
+	mg.BaseGeometry.ShaderDefines.Set("MORPHTARGETS", strconv.Itoa(MaxActiveMorphTargets))
+	mg.UniWeights.Init("morphTargetInfluences")
+	return &mg
 }
 
 // GetGeometry satisfies the IGeometry interface.
 func (mg *MorphGeometry) GetGeometry() *Geometry {
 
-	return mg.baseGeometry
+	return mg.BaseGeometry
 }
 
 // SetWeights sets the morph target weights.
 func (mg *MorphGeometry) SetWeights(weights []float32) {
 
-	if len(weights) != len(mg.weights) {
+	if len(weights) != len(mg.Weights) {
 		panic("weights have invalid length")
 	}
-	mg.weights = weights
+	mg.Weights = weights
 }
 
-// Weights returns the morph target weights.
-func (mg *MorphGeometry) Weights() []float32 {
-
-	return mg.weights
-}
 
 // AddMorphTargets add multiple morph targets to the morph geometry.
 // Morph target deltas are calculated internally and the morph target geometries are altered to hold the deltas instead.
 func (mg *MorphGeometry) AddMorphTargets(morphTargets ...*Geometry) {
 
 	for i := range morphTargets {
-		mg.weights = append(mg.weights, 0)
+		mg.Weights = append(mg.Weights, 0)
 		// Calculate deltas for VertexPosition
 		vertexIdx := 0
-		baseVertices := mg.baseGeometry.VBO(gls.VertexPosition).Buffer()
+		baseVertices := mg.BaseGeometry.VBO(gls.VertexPosition).Buffer()
 		morphTargets[i].OperateOnVertices(func(vertex *math32.Vector3) bool {
 			var baseVertex math32.Vector3
 			baseVertices.GetVector3(vertexIdx*3, &baseVertex)
@@ -77,7 +72,7 @@ func (mg *MorphGeometry) AddMorphTargets(morphTargets ...*Geometry) {
 		// Calculate deltas for VertexNormal if attribute is present in target geometry
 		// It is assumed that if VertexNormals are present in a target geometry then they are also present in the base geometry
 		normalIdx := 0
-		baseNormalsVBO := mg.baseGeometry.VBO(gls.VertexNormal)
+		baseNormalsVBO := mg.BaseGeometry.VBO(gls.VertexNormal)
 		if baseNormalsVBO != nil {
 			baseNormals := baseNormalsVBO.Buffer()
 			morphTargets[i].OperateOnVertexNormals(func(normal *math32.Vector3) bool {
@@ -90,12 +85,12 @@ func (mg *MorphGeometry) AddMorphTargets(morphTargets ...*Geometry) {
 		}
 		// TODO Calculate deltas for VertexTangents
 	}
-	mg.targets = append(mg.targets, morphTargets...)
+	mg.Targets = append(mg.Targets, morphTargets...)
 
 	// Update all target attributes if we have few enough that we are able to send them
 	// all to the shader without sorting and choosing the ones with highest current weight
-	if len(mg.targets) <= MaxActiveMorphTargets {
-		mg.UpdateTargetAttributes(mg.targets)
+	if len(mg.Targets) <= MaxActiveMorphTargets {
+		mg.UpdateTargetAttributes(mg.Targets)
 	}
 
 }
@@ -104,41 +99,41 @@ func (mg *MorphGeometry) AddMorphTargets(morphTargets ...*Geometry) {
 func (mg *MorphGeometry) AddMorphTargetDeltas(morphTargetDeltas ...*Geometry) {
 
 	for range morphTargetDeltas {
-		mg.weights = append(mg.weights, 0)
+		mg.Weights = append(mg.Weights, 0)
 	}
-	mg.targets = append(mg.targets, morphTargetDeltas...)
+	mg.Targets = append(mg.Targets, morphTargetDeltas...)
 
 	// Update all target attributes if we have few enough that we are able to send them
 	// all to the shader without sorting and choosing the ones with highest current weight
-	if len(mg.targets) <= MaxActiveMorphTargets {
-		mg.UpdateTargetAttributes(mg.targets)
+	if len(mg.Targets) <= MaxActiveMorphTargets {
+		mg.UpdateTargetAttributes(mg.Targets)
 	}
 }
 
 // ActiveMorphTargets sorts the morph targets by weight and returns the top n morph targets with largest weight.
 func (mg *MorphGeometry) ActiveMorphTargets() ([]*Geometry, []float32) {
 
-	numTargets := len(mg.targets)
+	numTargets := len(mg.Targets)
 	if numTargets == 0 {
 		return nil, nil
 	}
 
 	if numTargets <= MaxActiveMorphTargets {
 		// No need to sort - just return the targets and weights directly
-		return mg.targets, mg.weights
+		return mg.Targets, mg.Weights
 	} else {
 		// Need to sort them by weight and only return the top N morph targets with largest weight (N = MaxActiveMorphTargets)
 		// TODO test this (more than [MaxActiveMorphTargets] morph targets)
 		sortedMorphTargets := make([]*Geometry, numTargets)
-		copy(sortedMorphTargets, mg.targets)
+		copy(sortedMorphTargets, mg.Targets)
 		sort.Slice(sortedMorphTargets, func(i, j int) bool {
-			return mg.weights[i] > mg.weights[j]
+			return mg.Weights[i] > mg.Weights[j]
 		})
 
 		sortedWeights := make([]float32, numTargets)
-		copy(sortedWeights, mg.weights)
+		copy(sortedWeights, mg.Weights)
 		sort.Slice(sortedWeights, func(i, j int) bool {
-			return mg.weights[i] > mg.weights[j]
+			return mg.Weights[i] > mg.Weights[j]
 		})
 		return sortedMorphTargets, sortedWeights
 	}
@@ -147,9 +142,9 @@ func (mg *MorphGeometry) ActiveMorphTargets() ([]*Geometry, []float32) {
 // SetIndices sets the indices array for this geometry.
 func (mg *MorphGeometry) SetIndices(indices math32.ArrayU32) {
 
-	mg.baseGeometry.SetIndices(indices)
-	for i := range mg.targets {
-		mg.targets[i].SetIndices(indices)
+	mg.BaseGeometry.SetIndices(indices)
+	for i := range mg.Targets {
+		mg.Targets[i].SetIndices(indices)
 	}
 }
 
@@ -168,9 +163,9 @@ func (mg *MorphGeometry) ComputeMorphed(weights []float32) *Geometry {
 // and VBOs associated with the base geometry and morph targets.
 func (mg *MorphGeometry) Dispose() {
 
-	mg.baseGeometry.Dispose()
-	for i := range mg.targets {
-		mg.targets[i].Dispose()
+	mg.BaseGeometry.Dispose()
+	for i := range mg.Targets {
+		mg.Targets[i].Dispose()
 	}
 }
 
@@ -187,14 +182,14 @@ func (mg *MorphGeometry) UpdateTargetAttributes(morphTargets []*Geometry) {
 // RenderSetup is called by the renderer before drawing the geometry.
 func (mg *MorphGeometry) RenderSetup(gs *gls.GLS) {
 
-	mg.baseGeometry.RenderSetup(gs)
+	mg.BaseGeometry.RenderSetup(gs)
 
 	// Sort weights and find top 8 morph targets with largest current weight (8 is the max sent to shader)
 	activeMorphTargets, activeWeights := mg.ActiveMorphTargets()
 
 	// If the morph geometry has more targets than the shader supports we need to update attribute names
 	// as weights change - we only send the top morph targets with highest weights
-	if len(mg.targets) > MaxActiveMorphTargets {
+	if len(mg.Targets) > MaxActiveMorphTargets {
 		mg.UpdateTargetAttributes(activeMorphTargets)
 	}
 
@@ -206,6 +201,6 @@ func (mg *MorphGeometry) RenderSetup(gs *gls.GLS) {
 	}
 
 	// Transfer active weights uniform
-	location := mg.uniWeights.Location(gs)
+	location := mg.UniWeights.Location(gs)
 	gs.Uniform1fv(location, int32(len(activeWeights)), activeWeights)
 }

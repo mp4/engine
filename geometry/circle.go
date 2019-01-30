@@ -32,18 +32,13 @@ func NewCircle(radius float64, segments int) *Circle {
 // and sector size angle in radians (thetaLength). This is the Circle constructor with most tunable parameters.
 func NewCircleSector(radius float64, segments int, thetaStart, thetaLength float64) *Circle {
 
-	circ := new(Circle)
+	circ := Circle{Radius: radius, Segments: segments, ThetaStart: thetaStart, ThetaLength: thetaLength}
 	circ.Geometry.Init()
 
 	// Validate arguments
 	if segments < 3 {
 		panic("Invalid argument: segments. The number of segments needs to be greater or equal to 3.")
 	}
-
-	circ.Radius = radius
-	circ.Segments = segments
-	circ.ThetaStart = thetaStart
-	circ.ThetaLength = thetaLength
 
 	// Create buffers
 	positions := math32.NewArrayF32(0, 16)
@@ -90,5 +85,5 @@ func NewCircleSector(radius float64, segments int, thetaStart, thetaLength float
 	circ.volume = 0
 	circ.volumeValid = true
 
-	return circ
+	return &circ
 }
